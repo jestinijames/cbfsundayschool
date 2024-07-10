@@ -8,6 +8,7 @@ import Google from 'next-auth/providers/google';
 import { db } from '@/lib/db';
 import { loginFormSchema } from '@/lib/schema';
 
+import { getTwoFactorConfirmationByUserId } from '@/data/two-factor-confirmation';
 import { getUserByEmail, getUserById } from '@/data/user';
 
 export const authConfig = {
@@ -40,7 +41,20 @@ export const authConfig = {
       // Prevent sign in without email verification
       if (!existingUser?.emailVerified) return false;
 
-      // TODO : Add 2FA check
+      // 2FA
+      if (existingUser.isTwoFactorEnabled) {
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+          existingUser.id,
+        );
+
+        if (!twoFactorConfirmation) return false;
+
+        await db.twoFactorConfirmation.delete({
+          where: {
+            id: twoFactorConfirmation.id,
+          },
+        });
+      }
 
       return true;
     },

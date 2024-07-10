@@ -1,15 +1,15 @@
-/* eslint-disable no-console */
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { Link } from 'next-view-transitions';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+//import { useRouter } from 'next13-progressbar';
 import React, { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { loginFormSchema, LoginFormType } from '@/lib/schema';
+import { RegisterFormSchema, RegisterFormType } from '@/lib/schema';
 
+import ErrorAlert from '@/components/alerts/error-alert';
+import SuccessAlert from '@/components/alerts/success-alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -21,36 +21,35 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-import { login } from '@/actions/login';
+import { register } from '@/actions/register';
 
-export default function LoginForm() {
-  const searchParams = useSearchParams();
-  const urlError =
-    searchParams.get('error') === 'OAuthAccountNotLinked'
-      ? 'Email already in use with different provider'
-      : '';
+// import { ServerActionReponse } from '@/types';
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+export default function RegisterForm() {
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  // const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<LoginFormType>({
-    resolver: zodResolver(loginFormSchema),
+  const form = useForm<RegisterFormType>({
+    resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  async function onSubmit(values: LoginFormType) {
-    setError('');
-    setSuccess('');
+  async function onSubmit(values: RegisterFormType) {
     startTransition(() => {
-      login(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
+      setError('');
+      setSuccess('');
+      register(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
       });
     });
   }
@@ -59,25 +58,47 @@ export default function LoginForm() {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='grid gap-4'>
+          <div className='flex w-full gap-2'>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <div className='flex-1 grid gap-2'>
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder='John'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
             name='email'
             render={({ field }) => (
-              <div className='flex-1 grid gap-2'>
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder='you@example.com'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              </div>
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={isPending}
+                    placeholder='you@example.com'
+                    type='email'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name='password'
@@ -85,13 +106,6 @@ export default function LoginForm() {
               <FormItem>
                 <div className='flex justify-between items-center'>
                   <FormLabel>Password</FormLabel>
-
-                  <Link
-                    href='/auth/forgot-password'
-                    className='text-sm text-muted-foreground hover:text-primary hover:underline  duration-300 transition-all'
-                  >
-                    Forgot Password?
-                  </Link>
                 </div>
                 <FormControl>
                   <div className='relative'>
@@ -130,17 +144,36 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-          {error ? <p className='text-red-600'>{error}</p> : null}
-          {urlError ? <p className='text-red-600'>{urlError}</p> : null}
-          {success ? <p className='text-green-600'>{success}</p> : null}
+
+          <FormField
+            control={form.control}
+            name='confirmPassword'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder='Confirm password'
+                    type='password'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {error ? <ErrorAlert error={error} /> : null}
+          {success ? <SuccessAlert success={success} /> : null}
+
           <Button type='submit' disabled={isPending}>
             {isPending ? (
               <span className='flex gap-2'>
-                <LoaderCircleIcon className='animate-spin' />
-                <span>Login</span>
+                <LoaderCircle className='animate-spin' />
+                <span>Register</span>
               </span>
             ) : (
-              <span>Login</span>
+              <span>Register</span>
             )}
           </Button>
         </form>

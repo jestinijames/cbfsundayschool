@@ -6,7 +6,7 @@ import React from 'react';
 
 import { DEFAULT_LOGIN_REDIRECT } from '@/lib/routes';
 
-import LoginForm from '@/components/auth/LoginForm';
+import LoginForm from '@/components/auth/login-form';
 import { GoogleLogo } from '@/components/Icons';
 import { Button } from '@/components/ui/button';
 // import LoginForm from '@/components/auth/LoginForm';

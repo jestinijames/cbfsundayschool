@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Link } from 'next-view-transitions';
 
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import ForgotPasswordForm from '@/components/auth/forgot-password-form';
 import { Separator } from '@/components/ui/separator';
 
 export default function ForgotPasswordPage() {

@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { SessionProvider } from 'next-auth/react';
 import { ViewTransitions } from 'next-view-transitions';
 import * as React from 'react';
 import { Toaster } from 'sonner';
@@ -8,6 +9,7 @@ import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
+import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
 import ProgressProvider from '@/providers/ProgressProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
@@ -36,31 +38,35 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+
   return (
-    <ViewTransitions>
-      <html>
-        <body
-          className={cn(
-            'relative h-full font-sans antialiased',
-            inter.className,
-          )}
-        >
-          <ThemeProvider
-            attribute='class'
-            defaultTheme='system'
-            enableSystem
-            disableTransitionOnChange
+    <SessionProvider session={session}>
+      <ViewTransitions>
+        <html>
+          <body
+            className={cn(
+              'relative h-full font-sans antialiased',
+              inter.className,
+            )}
           >
-            <ProgressProvider>{children}</ProgressProvider>
-          </ThemeProvider>
-          <Toaster position='top-center' richColors />
-        </body>
-      </html>
-    </ViewTransitions>
+            <ThemeProvider
+              attribute='class'
+              defaultTheme='system'
+              enableSystem
+              disableTransitionOnChange
+            >
+              <ProgressProvider>{children}</ProgressProvider>
+            </ThemeProvider>
+            <Toaster position='top-center' richColors />
+          </body>
+        </html>
+      </ViewTransitions>
+    </SessionProvider>
   );
 }

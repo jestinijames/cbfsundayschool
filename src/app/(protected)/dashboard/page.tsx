@@ -1,15 +1,18 @@
+'use client';
+
+import { signOut } from 'next-auth/react';
 import React from 'react';
+
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 import { Button } from '@/components/ui/button';
 
-import { auth, signOut } from '@/auth';
+export default function DashboardPage() {
+  const user = useCurrentUser();
 
-import getAllClasses from './get-all-classes';
-
-export default async function DashboardPage() {
-  const session = await auth();
-
-  const classes = await getAllClasses();
+  const signUserOut = () => {
+    signOut();
+  };
 
   // console.log(classes);
   // console.log(session);
@@ -17,18 +20,10 @@ export default async function DashboardPage() {
   return (
     <>
       <div>
-        {JSON.stringify(session)}
-        <form
-          action={async () => {
-            'use server';
-            await signOut();
-          }}
-        >
-          <Button type='submit'>Sign out</Button>
+        {JSON.stringify(user)}
+        <form>
+          <Button onClick={signUserOut}>Sign out</Button>
         </form>
-      </div>
-      <div>
-        <pre>{JSON.stringify(classes, null, 2)}</pre>
       </div>
     </>
   );

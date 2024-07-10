@@ -44,3 +44,6 @@ sitemap-*.xml
 
 # secrets
 secrets.json
+
+# notes
+notes.txt

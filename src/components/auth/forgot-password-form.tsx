@@ -4,11 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { forgotPasswordFormSchema, ForgotPasswordFormType } from '@/lib/schema';
 
+import ErrorAlert from '@/components/alerts/error-alert';
+import SuccessAlert from '@/components/alerts/success-alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -20,10 +22,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
+import { reset } from '@/actions/reset';
+
 export default function ForgotPasswordForm() {
-  const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
-  const [message, setMessage] = useState<string>('');
-  const [isEmailSent, setIsEmailSent] = useState<boolean>(false);
+  const [error, setError] = useState<string | undefined>('');
+  const [success, setSuccess] = useState<string | undefined>('');
+
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<ForgotPasswordFormType>({
     resolver: zodResolver(forgotPasswordFormSchema),
@@ -33,22 +38,20 @@ export default function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: ForgotPasswordFormType) {
-    setIsFormLoading(true); // Set form state to loading
-    // const forgotPasswordResponse: ServerActionReponse =
-    //   await forgotPasswordAction(values);
-    // console.log('Forgot password response: ', forgotPasswordResponse); // DEBUG
-    // if (forgotPasswordResponse.statusCode === 200) {
-    //   setIsEmailSent(true);
-    // } else {
-    //   setMessage(forgotPasswordResponse.message);
-    // }
-    setIsFormLoading(false);
-    form.reset();
+    setError('');
+    setSuccess('');
+    startTransition(() => {
+      reset(values).then((data) => {
+        setError(data?.error);
+        setSuccess(data?.success);
+        form.reset();
+      });
+    });
   }
 
   return (
     <>
-      {isEmailSent ? (
+      {success ? (
         <div className='flex flex-col gap-2 items-center justify-center h-full w-full'>
           <Image
             src='/forgot-email-sent.svg'
@@ -78,7 +81,12 @@ export default function ForgotPasswordForm() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder='you@example.com' {...field} />
+                      <Input
+                        type='email'
+                        disabled={isPending}
+                        placeholder='you@example.com'
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -86,10 +94,11 @@ export default function ForgotPasswordForm() {
               )}
             />
 
-            {message ? <p className='text-red-600'>{message}</p> : null}
+            {error ? <ErrorAlert error={error} /> : null}
+            {success ? <SuccessAlert success={success} /> : null}
 
-            <Button type='submit' disabled={isFormLoading}>
-              {isFormLoading ? (
+            <Button type='submit' disabled={isPending}>
+              {isPending ? (
                 <span className='flex gap-2'>
                   <LoaderCircleIcon className='animate-spin' />
                   <span>Send Reset Link</span>
