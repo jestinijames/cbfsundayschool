@@ -1,43 +1,32 @@
-import Image from 'next/image';
 import { Link } from 'next-view-transitions';
 
 import NewPasswordForm from '@/components/auth/new-password-form';
-import { Separator } from '@/components/ui/separator';
+import AuthCover from '@/components/layout/auth-cover';
 
 export default function NewPasswordPage() {
   return (
-    <div className='w-full lg:grid lg:grid-cols-8 min-h-screen'>
-      <div className='hidden bg-muted lg:block col-span-3'>
-        <Image
-          src='/light-pattern.svg'
-          alt='Image'
-          width='1920'
-          height='1080'
-          className='h-full w-full object-cover dark:brightness-[0.2] dark:grayscale'
-        />
-      </div>
-
-      <div className='flex items-center justify-center py-12 col-span-5'>
-        <div className='mx-auto grid max-w-lg w-full gap-6 px-4'>
-          <div className='grid gap-2 text-center'>
-            <h1 className='text-4xl font-bold text-left'>
+    <div className='relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
+      <AuthCover />
+      <div className='flex h-full items-center p-4 lg:p-8'>
+        <div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]'>
+          <div className='flex flex-col space-y-2 text-center'>
+            <h1 className='text-2xl font-semibold tracking-tight'>
               Reset Your Password 🔒
             </h1>
-            <p className='text-balance text-left text-muted-foreground'>
+            <p className='text-sm text-muted-foreground'>
               🚀 Get Back on Track in No Time!
             </p>
           </div>
-          <Separator />
           <NewPasswordForm />
-          <div className='text-center text-sm'>
-            Remember your password?&nbsp;
+          <p className='px-8 text-center text-sm text-muted-foreground'>
+            Remember your password?{' '}
             <Link
               href='/auth/login'
-              className='hover:text-muted-foreground hover:underline duration-300 transition-all'
+              className='underline underline-offset-4 hover:text-primary'
             >
-              Login here!
-            </Link>
-          </div>
+              Sign in here!
+            </Link>{' '}
+          </p>
         </div>
       </div>
     </div>

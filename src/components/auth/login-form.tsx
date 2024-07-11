@@ -12,6 +12,7 @@ import { loginFormSchema, LoginFormType } from '@/lib/schema';
 
 import ErrorAlert from '@/components/alerts/error-alert';
 import SuccessAlert from '@/components/alerts/success-alert';
+import GoogleSignInButton from '@/components/common/google-auth-button';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -187,6 +188,17 @@ export default function LoginForm() {
           </Button>
         </form>
       </Form>
+      <div className='relative'>
+        <div className='absolute inset-0 flex items-center'>
+          <span className='w-full border-t' />
+        </div>
+        <div className='relative flex justify-center text-xs uppercase'>
+          <span className='bg-background px-2 text-muted-foreground'>
+            Or continue with
+          </span>
+        </div>
+      </div>
+      <GoogleSignInButton />
     </>
   );
 }

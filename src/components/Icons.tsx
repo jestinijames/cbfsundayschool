@@ -1,4 +1,4 @@
-export const GoogleLogo = () => {
+export const GoogleLogo = ({ className }: { className: string }) => {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -7,6 +7,7 @@ export const GoogleLogo = () => {
       width='24'
       height='24'
       viewBox='0 0 48 48'
+      className={className}
     >
       <path
         fill='#FFC107'

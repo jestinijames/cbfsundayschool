@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -53,14 +52,6 @@ export default function ForgotPasswordForm() {
     <>
       {success ? (
         <div className='flex flex-col gap-2 items-center justify-center h-full w-full'>
-          <Image
-            src='/forgot-email-sent.svg'
-            alt='Password reset email sent SVG icon'
-            height={100}
-            width={100}
-            className='h-20 w-20'
-          />
-
           <p className='text-2xl font-bold'>📧 Check you Mailbox 📧</p>
 
           <p className='text-lg text-center text-muted-foreground'>
