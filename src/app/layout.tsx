@@ -7,8 +7,6 @@ import { Toaster } from 'sonner';
 
 import '@/styles/globals.css';
 
-import { cn } from '@/lib/utils';
-
 import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
 import ProgressProvider from '@/providers/ProgressProvider';
@@ -48,13 +46,8 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <ViewTransitions>
-        <html>
-          <body
-            className={cn(
-              'relative h-full font-sans antialiased',
-              inter.className,
-            )}
-          >
+        <html lang='en' suppressHydrationWarning>
+          <body className={`${inter.className} overflow-hidden`}>
             <ThemeProvider
               attribute='class'
               defaultTheme='system'
