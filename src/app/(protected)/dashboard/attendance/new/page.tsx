@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import AttendanceForm from '@/components/forms/attendance-form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const breadcrumbItems = [
@@ -21,6 +22,7 @@ export default function Page() {
           initialData={null}
           key={null}
         /> */}
+        <AttendanceForm />
       </div>
     </ScrollArea>
   );

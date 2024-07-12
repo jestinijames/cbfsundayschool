@@ -55,3 +55,18 @@ export const NewPasswordSchema = z.object({
 });
 
 export type NewPasswordFormType = z.infer<typeof NewPasswordSchema>;
+
+export const AttendanceFormSchema = z.object({
+  id: z.string().nullable().optional(),
+  teacher: z.string(),
+  class: z.string(),
+  students: z.array(
+    z.object({
+      id: z.string().nullable().optional(),
+      name: z.string(),
+      status: z.string(),
+    }),
+  ),
+});
+
+export type AttendanceFormType = z.infer<typeof AttendanceFormSchema>;
