@@ -1,18 +1,13 @@
 'use client';
 
-import { Next13ProgressBar } from 'next13-progressbar';
+import NextTopLoader from 'nextjs-toploader';
 import React from 'react';
 
 const ProgressProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       {children}
-      <Next13ProgressBar
-        height='4px'
-        color='#fff'
-        options={{ showSpinner: false }}
-        showOnShallow
-      />
+      <NextTopLoader />
     </>
   );
 };

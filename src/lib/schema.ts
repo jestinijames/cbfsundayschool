@@ -57,14 +57,17 @@ export const NewPasswordSchema = z.object({
 export type NewPasswordFormType = z.infer<typeof NewPasswordSchema>;
 
 export const AttendanceFormSchema = z.object({
-  id: z.string().nullable().optional(),
+  id: z.string().optional().nullable(),
   teacher: z.string(),
   class: z.string(),
+  date: z.date().min(new Date('1970-01-01'), {
+    message: 'Date is out of range',
+  }),
   students: z.array(
     z.object({
-      id: z.string().nullable().optional(),
+      id: z.string(),
       name: z.string(),
-      status: z.string(),
+      status: z.boolean(),
     }),
   ),
 });

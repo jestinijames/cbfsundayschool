@@ -1,13 +1,47 @@
 'use client';
 
 import { PresentationIcon, SpeechIcon, UsersIcon } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+
+import { getDashboardTotals } from '@/actions/googlesheets/dashboard/get-dashboard-totals';
 
 export default function DashboardPage() {
+  const { toast } = useToast();
+  const [totals, setTotals] = useState<
+    { teachers: number; students: number; classes: number } | undefined | null
+  >(null);
+
+  useEffect(() => {
+    const fetchTeacherCount = async () => {
+      try {
+        const response = await getDashboardTotals();
+        if (response.success) {
+          setTotals(response.totals);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Something went wrong.',
+            description: response.error,
+          });
+        }
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Something went wrong.',
+          description: 'Failed to fetch teacher count',
+        });
+      }
+    };
+
+    fetchTeacherCount();
+  }, []);
+
   return (
     <>
       <ScrollArea className='h-full'>
@@ -34,7 +68,13 @@ export default function DashboardPage() {
                     <UsersIcon className='h-4 w-4 text-muted-foreground' />
                   </CardHeader>
                   <CardContent>
-                    <div className='text-2xl font-bold'>50</div>
+                    <div className='text-2xl font-bold'>
+                      {totals?.students ? (
+                        totals.students
+                      ) : (
+                        <Skeleton className='w-16 h-6' />
+                      )}
+                    </div>
                     <p className='text-xs text-muted-foreground'>
                       Ages 4 and above
                     </p>
@@ -49,7 +89,13 @@ export default function DashboardPage() {
                     <SpeechIcon className='h-4 w-4 text-muted-foreground' />
                   </CardHeader>
                   <CardContent>
-                    <div className='text-2xl font-bold'>25</div>
+                    <div className='text-2xl font-bold'>
+                      {totals?.teachers ? (
+                        totals.teachers
+                      ) : (
+                        <Skeleton className='w-16 h-6' />
+                      )}
+                    </div>
                     {/* <p className='text-xs text-muted-foreground'>
                       Ages 4 and above
                     </p> */}
@@ -64,7 +110,13 @@ export default function DashboardPage() {
                     <PresentationIcon className='h-4 w-4 text-muted-foreground' />
                   </CardHeader>
                   <CardContent>
-                    <div className='text-2xl font-bold'>8</div>
+                    <div className='text-2xl font-bold'>
+                      {totals?.classes ? (
+                        totals.classes
+                      ) : (
+                        <Skeleton className='w-16 h-6' />
+                      )}
+                    </div>
                     <p className='text-xs text-muted-foreground'>
                       Tiny tots - Youth
                     </p>

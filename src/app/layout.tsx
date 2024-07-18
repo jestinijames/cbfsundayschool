@@ -3,9 +3,10 @@ import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { ViewTransitions } from 'next-view-transitions';
 import * as React from 'react';
-import { Toaster } from 'sonner';
 
 import '@/styles/globals.css';
+
+import { Toaster } from '@/components/ui/toaster';
 
 import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
@@ -56,7 +57,7 @@ export default async function RootLayout({
             >
               <ProgressProvider>{children}</ProgressProvider>
             </ThemeProvider>
-            <Toaster position='top-center' richColors />
+            <Toaster />
           </body>
         </html>
       </ViewTransitions>

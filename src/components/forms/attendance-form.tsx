@@ -1,17 +1,18 @@
 'use client';
-
-/* eslint-disable no-console */
-
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { CalendarIcon, CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm, useFormContext } from 'react-hook-form';
-import type { z } from 'zod';
+import { useFieldArray, useForm, useFormContext } from 'react-hook-form';
+import { z } from 'zod';
 
 import { AttendanceFormSchema } from '@/lib/schema';
 import { cn } from '@/lib/utils';
 
+import { formatDate } from '@/components/tables/attendance-tables/data-table';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Command,
   CommandEmpty,
@@ -28,28 +29,106 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Heading } from '@/components/ui/heading';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { toast } from '@/components/ui/use-toast';
 
+import { fetchClassByTeacherId } from '@/actions/googlesheets/attendance/fetch-class-by-teacher';
+import { fetchStudentsByClassId } from '@/actions/googlesheets/attendance/fetch-students-by-class';
+import {
+  AttendanceData,
+  submitAttendance,
+} from '@/actions/googlesheets/attendance/submit-attendance';
+import { ClassData } from '@/actions/googlesheets/classes/read-classes';
 import {
   readAllTeachers,
   TeacherData,
 } from '@/actions/googlesheets/teachers/read-teachers';
 
 export default function AttendanceForm() {
-  const onSubmit = (data: z.infer<typeof AttendanceFormSchema>) => {
-    console.log(data);
-  };
   const markAttendanceMethods = useForm<z.infer<typeof AttendanceFormSchema>>({
     resolver: zodResolver(AttendanceFormSchema),
     defaultValues: {
       students: [],
     },
   });
+
+  const [assignedClass, setAssignedClass] = useState<ClassData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const {
+    setValue,
+    watch,
+    //formState: { errors },
+  } = markAttendanceMethods;
+  const selectedTeacher = watch('teacher');
+
+  //console.log(errors, 'errors');
+
+  useEffect(() => {
+    if (selectedTeacher) {
+      const fetchClass = async () => {
+        const response = await fetchClassByTeacherId(selectedTeacher);
+        if (response.success && response.data) {
+          setAssignedClass(response.data);
+          setValue('class', response.data.id);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Something went wrong.',
+            description: response.error,
+          });
+        }
+      };
+
+      fetchClass();
+    }
+  }, [selectedTeacher, setValue]);
+
+  const onSubmit = async (data: z.infer<typeof AttendanceFormSchema>) => {
+    setLoading(true);
+
+    //  console.log(data, 'attendanceDatabefore');
+
+    const attendanceData: AttendanceData = {
+      ...data,
+      date: formatDate(data.date), // Convert date to string
+    };
+
+    //  console.log(attendanceData, 'attendanceDataafter');
+
+    const response = await submitAttendance(attendanceData);
+    if (response.success) {
+      toast({
+        variant: 'success',
+        title: 'Attendance marked successfully',
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to mark attendance',
+        description: response.error,
+      });
+    }
+    setLoading(false);
+  };
+
+  const isMutating = loading;
 
   return (
     <>
@@ -62,14 +141,27 @@ export default function AttendanceForm() {
       <Separator />
       <Form {...markAttendanceMethods}>
         <form onSubmit={markAttendanceMethods.handleSubmit(onSubmit)}>
-          <TeachersField />
+          <TeachersField isMutating={isMutating} />
+          <DateField isMutating={isMutating} />
+          <StudentsAssignedField
+            assignedClass={assignedClass}
+            isMutating={isMutating}
+          />
+
+          <Button
+            disabled={isMutating}
+            className='ml-auto text-white mt-10'
+            type='submit'
+          >
+            Mark Attendance
+          </Button>
         </form>
       </Form>
     </>
   );
 }
 
-function TeachersField() {
+function TeachersField({ isMutating }: { isMutating: boolean }) {
   const { control, setValue } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -79,10 +171,13 @@ function TeachersField() {
       setLoading(true);
       const response = await readAllTeachers();
       if (response.success) {
-        console.log('Fetched teachers:', response.data);
         setTeachers(response.data);
       } else {
-        console.error('Error fetching teachers:', response.error);
+        toast({
+          variant: 'destructive',
+          title: 'Something went wrong.',
+          description: response.error,
+        });
       }
       setLoading(false);
     };
@@ -91,14 +186,11 @@ function TeachersField() {
   }, []);
 
   const usersData = useMemo(() => {
-    console.log('Mapping teachers to usersData:', teachers);
     return (teachers || []).map((teacher) => ({
       label: teacher.name,
       value: teacher.id,
     }));
   }, [teachers]);
-
-  console.log(usersData, 'ud');
 
   return (
     <FormField
@@ -106,14 +198,14 @@ function TeachersField() {
       name='teacher'
       render={({ field }) => (
         <FormItem className='mt-2 flex flex-col'>
-          <FormLabel htmlFor='teacher'>Teachers:</FormLabel>
+          <FormLabel htmlFor='teacher'>Teacher:</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
                   variant='outline'
-                  disabled={loading}
-                  aria-disabled={loading}
+                  disabled={loading || isMutating}
+                  aria-disabled={loading || isMutating}
                   role='combobox'
                   className={cn(
                     'justify-between',
@@ -181,72 +273,188 @@ function TeachersField() {
   );
 }
 
-// function ModuleSubscriptionForm({
-//   id,
-//   isMutating,
-//   submitButton,
-//   isEdit,
-// }: ModuleSubscriptionFormProps) {
-//   const {watch, setValue} = useFormContext();
-//   const [selectedModules, setSelectedModules] = useState<
-//     {value: string; label: string}[]
-//   >([]);
-//   const {modulesData, isLoading, error} = useCustomerModules();
+function StudentsAssignedField({
+  assignedClass,
+  isMutating,
+}: {
+  assignedClass: ClassData | null;
+  isMutating: boolean;
+}) {
+  const { watch, setValue, control, register } = useFormContext();
 
-//   useEffect(() => {
-//     const moduleSubscriptions = watch("moduleSubscriptions") as
-//       | {moduleId: {toString: () => number}; moduleName: string}[]
-//       | undefined;
+  const { fields } = useFieldArray({
+    control,
+    name: 'students',
+  });
 
-//     if (Array.isArray(moduleSubscriptions)) {
-//       const selectedModules = moduleSubscriptions.map(
-//         (module: {moduleId: {toString: () => number}; moduleName: string}) => {
-//           return {
-//             value: String(module.moduleId),
-//             label: module.moduleName,
-//           };
-//         }
-//       ) as {value: string; label: string}[];
-//       setSelectedModules(selectedModules);
-//       setValue("moduleSubscriptions", moduleSubscriptions);
-//     }
+  const selectedClass = watch('class');
 
-//     console.log(moduleSubscriptions, "modssss");
-//   }, [watch, setSelectedModules, setValue]);
+  useEffect(() => {
+    if (selectedClass) {
+      const fetchClass = async () => {
+        const response = await fetchStudentsByClassId(selectedClass);
+        if (response.success) {
+          setValue('students', response.data);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Something went wrong.',
+            description: response.error,
+          });
+        }
+      };
 
-//   // Render loading or error states if necessary
-//   if (isLoading) return <Skeleton className="h-8 w-full" />;
-//   if (error)
-//     return (
-//       <Paragraph className="font-semibold">Error loading modules</Paragraph>
-//     );
+      fetchClass();
+    }
+  }, [selectedClass, setValue]);
 
-//   // Main render return for the component
-//   return (
-//     <section className="flex items-center justify-between">
-//       <div className="grid w-full items-center gap-2">
-//         <Label htmlFor="moduleSubscriptions">Module Subscription:</Label>
-//         <FancyMultiSelect
-//           value={selectedModules}
-//           disabled={isMutating || isEdit}
-//           aria-disabled={isMutating || isEdit}
-//           name="modules"
-//           multiSelectData={modulesData}
-//           onChange={(selectedModules) => {
-//             setSelectedModules(selectedModules);
-//             setValue(
-//               "moduleSubscriptions",
-//               selectedModules.map((module) => ({
-//                 moduleId: parseInt(module.value),
-//                 moduleName: module.label,
-//                 buyerId: id,
-//                 moduleOnboarded: parseInt(module.value) === 97 ? true : false, //only lite has instant onboarded
-//               }))
-//             );
-//           }}
-//         />
-//       </div>
-//       {submitButton}
-//     </section>
-//   );
-// }
+  return (
+    <>
+      <Card className='mt-10'>
+        <CardHeader>
+          <CardTitle>{assignedClass ? assignedClass.name : ''}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table className='mt-5'>
+            <TableCaption>
+              {fields.length == 0 && <span> No Data.</span>}
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className='relative'>Student ID</TableHead>
+                <TableHead className='relative'>Student</TableHead>
+                <TableHead className='relative'>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fields.map((field, index) => (
+                <TableRow key={field.id}>
+                  <TableCell className='w-80 font-medium'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.id`}
+                      render={() => (
+                        <FormItem className='flex flex-col '>
+                          <FormControl>
+                            <Input
+                              disabled
+                              aria-disabled
+                              {...register(`students.${index.toString()}.id`, {
+                                required: true,
+                              })}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+
+                  <TableCell className='w-80 font-medium'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.name`}
+                      render={() => (
+                        <FormItem className='flex flex-col '>
+                          <FormControl>
+                            <Input
+                              disabled
+                              aria-disabled
+                              {...register(
+                                `students.${index.toString()}.name`,
+                                {
+                                  required: true,
+                                },
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell className='w-80 font-medium'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.status`}
+                      render={({ field }) => (
+                        <FormItem className='flex flex-col'>
+                          <FormControl>
+                            <Switch
+                              checked={field.value as boolean}
+                              disabled={isMutating}
+                              aria-disabled={isMutating}
+                              onCheckedChange={field.onChange}
+                              {...register(
+                                `students.${index.toString()}.status`,
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
+
+function DateField({ isMutating }: { isMutating: boolean }) {
+  const { control } = useFormContext();
+  return (
+    <FormField
+      control={control}
+      name='date'
+      render={({ field }) => (
+        <FormItem className='mt-3 flex flex-col'>
+          <FormLabel>Date:</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  disabled={isMutating}
+                  aria-disabled={isMutating}
+                  variant='input'
+                  className={cn(
+                    'w-full pl-3 text-left font-normal',
+                    !field.value && 'text-accent-foreground',
+                  )}
+                >
+                  {field.value ? (
+                    format(field.value as Date, 'PPP')
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                  <CalendarIcon className='ml-auto size-4 opacity-50' />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent
+              className='max-h-[var(--radix-popover-content-available-height)] w-[var(--radix-popover-trigger-width)] p-0'
+              align='start'
+            >
+              <Calendar
+                mode='single'
+                selected={field.value as Date}
+                disabled={(date) =>
+                  // Only this year and only sundays
+                  date.getFullYear() !== new Date().getFullYear() ||
+                  date.getDay() !== 0
+                }
+                initialFocus
+                onSelect={field.onChange}
+              />
+            </PopoverContent>
+          </Popover>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
