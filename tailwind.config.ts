@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /** @type {import('tailwindcss').Config} */
+//@ts-ignore
 module.exports = {
   darkMode: ['class'],
   content: [
