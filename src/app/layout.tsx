@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
@@ -12,7 +14,6 @@ import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
 import ProgressProvider from '@/providers/ProgressProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
-
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -58,6 +59,8 @@ export default async function RootLayout({
               <ProgressProvider>{children}</ProgressProvider>
             </ThemeProvider>
             <Toaster />
+            <SpeedInsights />
+            <Analytics />
           </body>
         </html>
       </ViewTransitions>
