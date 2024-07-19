@@ -1,5 +1,6 @@
 'use client';
 import { signOut, useSession } from 'next-auth/react';
+import { Link } from 'next-view-transitions';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,12 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+    );
+  } else {
+    return (
+      <Link href='/auth/login' className='text-sm'>
+        Log in
+      </Link>
     );
   }
 }
