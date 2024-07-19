@@ -50,6 +50,7 @@ export const AttendanceClient = () => {
           description='View Student Attendance'
         />
         <Button
+          variant='outline'
           className='text-xs md:text-sm '
           onClick={() => router.push(`/dashboard/attendance/new`)}
         >
