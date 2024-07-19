@@ -166,11 +166,7 @@ export default function RegisterForm() {
           {error ? <ErrorAlert error={error} /> : null}
           {success ? <SuccessAlert success={success} /> : null}
 
-          <Button
-            className='text-white bg-black  dark:bg-white dark:text-black'
-            type='submit'
-            disabled={isPending}
-          >
+          <Button type='submit' disabled={isPending}>
             {isPending ? (
               <span className='flex gap-2'>
                 <LoaderCircle className='animate-spin' />
