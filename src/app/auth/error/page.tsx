@@ -6,7 +6,7 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 
-export default function Error({ reset }: { error?: any; reset: () => void }) {
+export default function Error({ reset }: { error?: any; reset: any }) {
   //React.useEffect(() => {}, [error]);
 
   return (
