@@ -39,7 +39,8 @@ export const authConfig = {
       const existingUser = await getUserById(user.id ?? '');
 
       // Prevent sign in without email verification
-      if (!existingUser?.emailVerified) return false;
+      if (!existingUser?.emailVerified || !existingUser.emailApproved)
+        return false;
 
       // 2FA
       if (existingUser.isTwoFactorEnabled) {
