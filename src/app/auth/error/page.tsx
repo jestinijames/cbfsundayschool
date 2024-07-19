@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'; // Error components must be Client Components
 
 import Link from 'next/link';
@@ -5,17 +6,8 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.error(error);
-  }, [error]);
+export default function Error({ reset }: { error?: any; reset: () => void }) {
+  //React.useEffect(() => {}, [error]);
 
   return (
     <main>
