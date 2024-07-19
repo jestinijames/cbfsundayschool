@@ -321,7 +321,6 @@ function StudentsAssignedField({
             </TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead className='relative'>Student ID</TableHead>
                 <TableHead className='relative'>Student</TableHead>
                 <TableHead className='relative'>Status</TableHead>
               </TableRow>
@@ -329,7 +328,7 @@ function StudentsAssignedField({
             <TableBody>
               {fields.map((field, index) => (
                 <TableRow key={field.id}>
-                  <TableCell className='w-80 font-medium'>
+                  <TableCell className='w-80 font-medium hidden'>
                     <FormField
                       control={control}
                       name={`students.${index.toString()}.id`}

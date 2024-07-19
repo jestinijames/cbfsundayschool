@@ -46,11 +46,11 @@ export const AttendanceClient = () => {
           //   data.length
           //   }
           //   )`}
-          title='Students'
-          description='Manage student attendance'
+          title='CBF Sunday School Attendance Tracker'
+          description='View Student Attendance'
         />
         <Button
-          className='text-xs md:text-sm text-white'
+          className='text-xs md:text-sm text-white bg-black  dark:bg-white dark:text-black'
           onClick={() => router.push(`/dashboard/attendance/new`)}
         >
           <Plus className='mr-2 h-4 w-4' /> Mark New

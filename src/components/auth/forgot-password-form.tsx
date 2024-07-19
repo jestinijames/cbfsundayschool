@@ -88,7 +88,11 @@ export default function ForgotPasswordForm() {
             {error ? <ErrorAlert error={error} /> : null}
             {success ? <SuccessAlert success={success} /> : null}
 
-            <Button className='text-white' type='submit' disabled={isPending}>
+            <Button
+              className='text-white bg-black  dark:bg-white dark:text-black'
+              type='submit'
+              disabled={isPending}
+            >
               {isPending ? (
                 <span className='flex gap-2'>
                   <LoaderCircleIcon className='animate-spin' />
