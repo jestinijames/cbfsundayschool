@@ -145,7 +145,7 @@ export default function LoginForm() {
                           {showPassword ? (
                             <Button
                               type='button'
-                              size='icon'
+                              size='default'
                               variant='ghost'
                               className='rounded-full'
                               onClick={() => setShowPassword(!showPassword)}
@@ -155,7 +155,7 @@ export default function LoginForm() {
                           ) : (
                             <Button
                               type='button'
-                              size='icon'
+                              size='default'
                               variant='ghost'
                               className='rounded-full'
                               onClick={() => setShowPassword(!showPassword)}
