@@ -176,7 +176,7 @@ export default function LoginForm() {
           {urlError ? <ErrorAlert error={urlError} /> : null}
           {success ? <SuccessAlert success={success} /> : null}
 
-          <Button type='submit' disabled={isPending}>
+          <Button variant='outline' type='submit' disabled={isPending}>
             {isPending ? (
               <span className='flex gap-2'>
                 <LoaderCircleIcon className='animate-spin' />
