@@ -64,6 +64,9 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
 
     return { success: true, data: attendanceRecords };
   } catch (error) {
-    return { success: false, error: 'Failed to fetch attendance records' };
+    return {
+      success: false,
+      error: `Failed to fetch attendance records : ${error}`,
+    };
   }
 };

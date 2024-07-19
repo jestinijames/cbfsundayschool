@@ -61,7 +61,7 @@ export const getDashboardTotals = async (): Promise<DashboardTotalResponse> => {
     console.error('Error reading data:', error);
     return {
       success: false,
-      error: 'Failed to read data',
+      error: `Failed to read data : ${error}`,
     };
   }
 };
