@@ -97,7 +97,6 @@ export const submitAttendance = async (
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to submit attendance:', error);
     return { success: false, error: 'Failed to submit attendance' };
   }
 };

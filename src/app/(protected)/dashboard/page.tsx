@@ -40,7 +40,7 @@ export default function DashboardPage() {
     };
 
     fetchTeacherCount();
-  }, []);
+  }, [toast]);
 
   return (
     <>
