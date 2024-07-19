@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `https://cbfsundayschool-10rf594b0-cbfmembers-projects.vercel.app/auth/new-verification?token=${token}`;
+  const confirmLink = `https://cbfsundayschool.vercel.app/auth/new-verification?token=${token}`;
 
   await resend.emails.send({
     from: 'Calvary Bible Fellowship. <reachout@cbf-church.org>',
@@ -14,7 +14,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetLink = `https://cbfsundayschool-10rf594b0-cbfmembers-projects.vercel.app/auth/new-password?token=${token}`;
+  const resetLink = `https://cbfsundayschool.vercel.app/auth/new-password?token=${token}`;
 
   await resend.emails.send({
     from: 'Calvary Bible Fellowship. <reachout@cbf-church.org>',
