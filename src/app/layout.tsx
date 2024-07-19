@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { ViewTransitions } from 'next-view-transitions';
+import NextTopLoader from 'nextjs-toploader';
 import * as React from 'react';
 
 import '@/styles/globals.css';
@@ -10,7 +11,6 @@ import { Toaster } from '@/components/ui/toaster';
 
 import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
-import ProgressProvider from '@/providers/ProgressProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -55,7 +55,8 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <ProgressProvider>{children}</ProgressProvider>
+              {children}
+              <NextTopLoader />
             </ThemeProvider>
             <Toaster />
           </body>
