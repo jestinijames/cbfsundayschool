@@ -93,7 +93,7 @@ export function DataTableToolbar<TData>({
   return (
     <div className='flex items-center justify-between flex-wrap gap-2 py-4'>
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
-        <div className='flex gap-x-2'>
+        <div className='flex gap-x-2 gap-y-2 flex-wrap'>
           {table.getColumn('student') && (
             <DataTableFacetedFilter
               column={table.getColumn('student')}

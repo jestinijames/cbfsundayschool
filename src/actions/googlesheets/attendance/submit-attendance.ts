@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use server';
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,8 +8,8 @@ export interface AttendanceData {
   class: string;
   date: string;
   students: {
-    id: string;
-    name: string;
+    value: string;
+    label: string;
     status: boolean;
   }[];
 }
@@ -34,6 +35,56 @@ export const submitAttendance = async (
 
     const formattedDate = attendanceData.date;
 
+    // fetch classId from class name
+    const classesResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'classes!A2:B',
+    });
+
+    const classRows = classesResponse.data.values;
+
+    if (!classRows || classRows.length === 0) {
+      return {
+        success: false,
+        error: 'No data found in classes sheet',
+      };
+    }
+
+    const classData = classRows.find((row) => row[1] === attendanceData.class);
+    if (!classData) {
+      return {
+        success: false,
+        error: 'Class not found in classes sheet',
+      };
+    }
+    const classId = classData[0];
+
+    // fetch teacherId from teacher name
+    const teachersResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'assignments!A2:B',
+    });
+
+    const teacherRows = teachersResponse.data.values;
+
+    if (!teacherRows || teacherRows.length === 0) {
+      return {
+        success: false,
+        error: 'No data found in assignments sheet',
+      };
+    }
+
+    const teacherData = teacherRows.find(
+      (row) => row[1] === attendanceData.teacher,
+    );
+    if (!teacherData) {
+      return {
+        success: false,
+        error: 'Teacher not found in assignments sheet',
+      };
+    }
+    const teacherId = teacherData[0];
+
     // Fetch existing attendance records
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -47,10 +98,35 @@ export const submitAttendance = async (
     const updateRequests = [];
 
     for (const student of attendanceData.students) {
+      // get studentId from student name ie student.value
+
+      const studentsResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+        range: 'students!A2:B',
+      });
+
+      const studentRows = studentsResponse.data.values;
+
+      if (!studentRows || studentRows.length === 0) {
+        return {
+          success: false,
+          error: 'No data found in students sheet',
+        };
+      }
+
+      const studentData = studentRows.find((row) => row[1] === student.value);
+      if (!studentData) {
+        return {
+          success: false,
+          error: `Student ${student.value} not found in students sheet`,
+        };
+      }
+      const studentId = studentData[0];
+
       const existingRow = rows.find(
         (row) =>
-          row[1] === student.id &&
-          row[2] === attendanceData.class &&
+          row[1] === studentId &&
+          row[2] === classId &&
           row[4] === formattedDate,
       );
 
@@ -65,9 +141,9 @@ export const submitAttendance = async (
         // Add new row
         newRows.push([
           uuidv4(),
-          student.id,
-          attendanceData.class,
-          attendanceData.teacher,
+          studentId,
+          classId,
+          teacherId,
           formattedDate,
           student.status ? 'Present' : 'Absent',
         ]);
@@ -101,6 +177,6 @@ export const submitAttendance = async (
 
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Failed to submit attendance' };
+    return { success: false, error: `Failed to submit attendance: ${error}` };
   }
 };

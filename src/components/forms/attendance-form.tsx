@@ -2,7 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { CalendarIcon, CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -48,8 +48,8 @@ import {
 } from '@/components/ui/table';
 import { toast } from '@/components/ui/use-toast';
 
-import { fetchClassByTeacherId } from '@/actions/googlesheets/attendance/fetch-class-by-teacher';
-import { fetchStudentsByClassId } from '@/actions/googlesheets/attendance/fetch-students-by-class';
+import { fetchClassByTeacherName } from '@/actions/googlesheets/attendance/fetch-class-by-teacher-name';
+import { fetchStudentsByClassName } from '@/actions/googlesheets/attendance/fetch-students-by-class-name';
 import {
   AttendanceData,
   submitAttendance,
@@ -63,9 +63,6 @@ import {
 export default function AttendanceForm() {
   const markAttendanceMethods = useForm<z.infer<typeof AttendanceFormSchema>>({
     resolver: zodResolver(AttendanceFormSchema),
-    defaultValues: {
-      students: [],
-    },
   });
 
   const [assignedClass, setAssignedClass] = useState<ClassData | null>(null);
@@ -78,12 +75,10 @@ export default function AttendanceForm() {
   } = markAttendanceMethods;
   const selectedTeacher = watch('teacher');
 
-  //console.log(errors, 'errors');
-
   useEffect(() => {
     if (selectedTeacher) {
       const fetchClass = async () => {
-        const response = await fetchClassByTeacherId(selectedTeacher);
+        const response = await fetchClassByTeacherName(selectedTeacher);
         if (response.success && response.data) {
           setAssignedClass(response.data);
           setValue('class', response.data.value);
@@ -103,14 +98,12 @@ export default function AttendanceForm() {
   const onSubmit = async (data: z.infer<typeof AttendanceFormSchema>) => {
     setLoading(true);
 
-    //  console.log(data, 'attendanceDatabefore');
-
     const attendanceData: AttendanceData = {
       ...data,
       date: formatDate(data.date), // Convert date to string
     };
 
-    //  console.log(attendanceData, 'attendanceDataafter');
+    //  console.log(attendanceData, 'adta');
 
     const response = await submitAttendance(attendanceData);
     if (response.success) {
@@ -139,24 +132,27 @@ export default function AttendanceForm() {
         />
       </div>
       <Separator />
-      <Form {...markAttendanceMethods}>
-        <form onSubmit={markAttendanceMethods.handleSubmit(onSubmit)}>
-          <TeachersField isMutating={isMutating} />
-          <DateField isMutating={isMutating} />
-          <StudentsAssignedField
-            assignedClass={assignedClass}
-            isMutating={isMutating}
-          />
-
-          <Button
-            disabled={isMutating}
-            className='ml-auto text-white mt-10'
-            type='submit'
-          >
-            Mark Attendance
-          </Button>
-        </form>
-      </Form>
+      <section className='flex flex-col gap-y-4'>
+        <Form {...markAttendanceMethods}>
+          <form onSubmit={markAttendanceMethods.handleSubmit(onSubmit)}>
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
+              <TeachersField isMutating={isMutating} />
+              <DateField isMutating={isMutating} />
+            </div>
+            <StudentsAssignedField
+              assignedClass={assignedClass}
+              isMutating={isMutating}
+            />
+            <Button
+              disabled={isMutating}
+              className='ml-auto text-white mt-10'
+              type='submit'
+            >
+              Mark Attendance
+            </Button>
+          </form>
+        </Form>
+      </section>
     </>
   );
 }
@@ -164,11 +160,11 @@ export default function AttendanceForm() {
 function TeachersField({ isMutating }: { isMutating: boolean }) {
   const { control, setValue } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+
+  const [popOverOpen, setPopOverOpen] = useState(false);
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      setLoading(true);
       const response = await readAllTeachers();
       if (response.success) {
         setTeachers(response.data);
@@ -179,34 +175,26 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
           description: response.error,
         });
       }
-      setLoading(false);
     };
 
     fetchTeachers();
   }, []);
-
-  const usersData = useMemo(() => {
-    return (teachers || []).map((teacher) => ({
-      label: teacher.label,
-      value: teacher.value,
-    }));
-  }, [teachers]);
 
   return (
     <FormField
       control={control}
       name='teacher'
       render={({ field }) => (
-        <FormItem className='mt-2 flex flex-col'>
-          <FormLabel htmlFor='teacher'>Teacher:</FormLabel>
-          <Popover>
+        <FormItem className='mt-3 flex flex-col'>
+          <FormLabel htmlFor='teacher'>Teacher</FormLabel>
+          <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
                   variant='outline'
-                  disabled={loading || isMutating}
-                  aria-disabled={loading || isMutating}
                   role='combobox'
+                  disabled={isMutating}
+                  aria-disabled={isMutating}
                   className={cn(
                     'justify-between',
 
@@ -214,51 +202,37 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
                   )}
                 >
                   {field.value
-                    ? usersData.find(
-                        (option) => option.value.toLowerCase() === field.value,
-                      )?.label
-                    : 'Select Teacher...'}
+                    ? teachers.find((teacher) => teacher.value === field.value)
+                        ?.label
+                    : 'Select teacher'}
                   <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
                 </Button>
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
-              <Command
-                filter={(value, search) => {
-                  const sanitizedSearch = search.replace(
-                    /[-\\^$*+?.()|[\]{}]/g,
-                    '\\$&',
-                  );
-
-                  const searchRegex = new RegExp(sanitizedSearch, 'i');
-
-                  const userLabel =
-                    usersData.find((user) => user.value === value)?.label || '';
-
-                  return searchRegex.test(userLabel) ? 1 : 0;
-                }}
-              >
-                <CommandInput placeholder='Search for Teacher...' />
-                <CommandEmpty>No Teachers found.</CommandEmpty>
+              <Command>
+                <CommandInput placeholder='Search teacher...' />
+                <CommandEmpty>No teachers found.</CommandEmpty>
                 <div className='max-h-40 overflow-y-auto'>
                   <CommandGroup>
-                    {usersData.map((option) => (
+                    {teachers.map((teacher) => (
                       <CommandItem
-                        key={option.value}
-                        value={option.value}
-                        onSelect={(value) => {
-                          setValue('teacher', value);
+                        key={teacher.value}
+                        value={teacher.value}
+                        onSelect={() => {
+                          setValue('teacher', teacher.value);
+                          setPopOverOpen(false);
                         }}
                       >
                         <CheckIcon
                           className={cn(
                             'mr-2 size-4',
-                            option.value.toLowerCase() === field.value
+                            teacher.value.toLowerCase() === field.value
                               ? 'opacity-100'
                               : 'opacity-0',
                           )}
                         />
-                        {option.label}
+                        {teacher.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -266,6 +240,7 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
               </Command>
             </PopoverContent>
           </Popover>
+
           <FormMessage />
         </FormItem>
       )}
@@ -273,138 +248,8 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
   );
 }
 
-function StudentsAssignedField({
-  assignedClass,
-  isMutating,
-}: {
-  assignedClass: ClassData | null;
-  isMutating: boolean;
-}) {
-  const { watch, setValue, control, register } = useFormContext();
-
-  const { fields } = useFieldArray({
-    control,
-    name: 'students',
-  });
-
-  const selectedClass = watch('class');
-
-  useEffect(() => {
-    if (selectedClass) {
-      const fetchClass = async () => {
-        const response = await fetchStudentsByClassId(selectedClass);
-        if (response.success) {
-          setValue('students', response.data);
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'Something went wrong.',
-            description: response.error,
-          });
-        }
-      };
-
-      fetchClass();
-    }
-  }, [selectedClass, setValue]);
-
-  return (
-    <>
-      <Card className='mt-10'>
-        <CardHeader>
-          <CardTitle>{assignedClass ? assignedClass.label : ''}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table className='mt-5'>
-            <TableCaption>
-              {fields.length == 0 && <span> No Data.</span>}
-            </TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead className='relative'>Student</TableHead>
-                <TableHead className='relative'>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fields.map((field, index) => (
-                <TableRow key={field.id}>
-                  <TableCell className='w-80 font-medium hidden'>
-                    <FormField
-                      control={control}
-                      name={`students.${index.toString()}.id`}
-                      render={() => (
-                        <FormItem className='flex flex-col '>
-                          <FormControl>
-                            <Input
-                              disabled
-                              aria-disabled
-                              {...register(`students.${index.toString()}.id`, {
-                                required: true,
-                              })}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-
-                  <TableCell className='w-80 font-medium'>
-                    <FormField
-                      control={control}
-                      name={`students.${index.toString()}.name`}
-                      render={() => (
-                        <FormItem className='flex flex-col '>
-                          <FormControl>
-                            <Input
-                              disabled
-                              aria-disabled
-                              {...register(
-                                `students.${index.toString()}.name`,
-                                {
-                                  required: true,
-                                },
-                              )}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell className='w-80 font-medium'>
-                    <FormField
-                      control={control}
-                      name={`students.${index.toString()}.status`}
-                      render={({ field }) => (
-                        <FormItem className='flex flex-col'>
-                          <FormControl>
-                            <Switch
-                              checked={field.value as boolean}
-                              disabled={isMutating}
-                              aria-disabled={isMutating}
-                              onCheckedChange={field.onChange}
-                              {...register(
-                                `students.${index.toString()}.status`,
-                              )}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </>
-  );
-}
-
 function DateField({ isMutating }: { isMutating: boolean }) {
+  const [popOverOpen, setPopOverOpen] = useState(false);
   const { control } = useFormContext();
   return (
     <FormField
@@ -412,14 +257,14 @@ function DateField({ isMutating }: { isMutating: boolean }) {
       name='date'
       render={({ field }) => (
         <FormItem className='mt-3 flex flex-col'>
-          <FormLabel>Date:</FormLabel>
-          <Popover>
+          <FormLabel htmlFor='date'> Date:</FormLabel>
+          <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
+                  variant='input'
                   disabled={isMutating}
                   aria-disabled={isMutating}
-                  variant='input'
                   className={cn(
                     'w-full pl-3 text-left font-normal',
                     !field.value && 'text-accent-foreground',
@@ -447,7 +292,10 @@ function DateField({ isMutating }: { isMutating: boolean }) {
                   date.getDay() !== 0
                 }
                 initialFocus
-                onSelect={field.onChange}
+                onSelect={(date) => {
+                  field.onChange(date);
+                  setPopOverOpen(false);
+                }}
               />
             </PopoverContent>
           </Popover>
@@ -455,5 +303,135 @@ function DateField({ isMutating }: { isMutating: boolean }) {
         </FormItem>
       )}
     />
+  );
+}
+
+function StudentsAssignedField({
+  assignedClass,
+  isMutating,
+}: {
+  assignedClass: ClassData | null;
+  isMutating: boolean;
+}) {
+  const { watch, setValue, control, register } = useFormContext();
+
+  const { fields } = useFieldArray({
+    control,
+    name: 'students',
+  });
+
+  const selectedClass = watch('class');
+
+  useEffect(() => {
+    if (selectedClass) {
+      const fetchStudents = async () => {
+        const response = await fetchStudentsByClassName(selectedClass);
+        if (response.success) {
+          setValue('students', response.data);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Something went wrong.',
+            description: response.error,
+          });
+        }
+      };
+
+      fetchStudents();
+    }
+  }, [selectedClass, setValue]);
+
+  return (
+    <>
+      <Card className='mt-10'>
+        <CardHeader>
+          <CardTitle>{assignedClass ? assignedClass.label : ''}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table className='mt-5'>
+            <TableCaption>
+              {fields.length == 0 && <span> No Data.</span>}
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className='relative'>Student</TableHead>
+                <TableHead className='relative'>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fields.map((field, index) => (
+                <TableRow key={field.id}>
+                  <TableCell className='w-80 font-medium hidden'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.value`}
+                      render={() => (
+                        <FormItem className='flex flex-col '>
+                          <FormControl>
+                            <Input
+                              disabled
+                              aria-disabled
+                              {...register(
+                                `students.${index.toString()}.value`,
+                                {
+                                  required: true,
+                                },
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+
+                  <TableCell className='w-80 font-medium'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.label`}
+                      render={() => (
+                        <FormItem className='flex flex-col '>
+                          <FormControl>
+                            <Input
+                              disabled
+                              aria-disabled
+                              {...register(
+                                `students.${index.toString()}.label`,
+                                {
+                                  required: true,
+                                },
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell className='w-80 font-medium'>
+                    <FormField
+                      control={control}
+                      name={`students.${index.toString()}.status`}
+                      render={({ field }) => (
+                        <FormItem className='flex flex-col'>
+                          <FormControl>
+                            <Switch
+                              disabled={isMutating}
+                              aria-disabled={isMutating}
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
   );
 }

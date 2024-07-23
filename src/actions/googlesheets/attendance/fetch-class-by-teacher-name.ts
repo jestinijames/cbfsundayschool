@@ -1,23 +1,30 @@
-/* eslint-disable no-console */
 'use server';
 
 import { google } from 'googleapis';
 
-interface ClassData {
+export interface ClassData {
   label: string;
   value: string;
 }
 
-interface FetchClassResponse {
+interface FetchClassByTeacherNameResponse {
   success: boolean;
   error?: string;
   data?: ClassData;
 }
 
-export const fetchClassByTeacherId = async (
-  teacherId: string,
-): Promise<FetchClassResponse> => {
+// Function to capitalize the first letter of each word in a string
+const capitalizeWords = (str: string): string => {
+  return str.replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+export const fetchClassByTeacherName = async (
+  teacherName: string,
+): Promise<FetchClassByTeacherNameResponse> => {
   try {
+    // Capitalize the first letter of each word in the teacher's name
+    const formattedTeacherName = capitalizeWords(teacherName);
+
     const auth = await google.auth.getClient({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -28,7 +35,7 @@ export const fetchClassByTeacherId = async (
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Fetch assignments sheet to find the class ID for the given teacher ID
+    // Fetch assignments sheet to find the class ID for the given teacher name
     const assignmentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: 'assignments!A2:C',
@@ -43,7 +50,9 @@ export const fetchClassByTeacherId = async (
       };
     }
 
-    const assignment = assignmentRows.find((row) => row[0] === teacherId);
+    const assignment = assignmentRows.find(
+      (row) => row[1] === formattedTeacherName,
+    );
 
     if (!assignment) {
       return {
@@ -79,8 +88,8 @@ export const fetchClassByTeacherId = async (
     }
 
     const classInfo: ClassData = {
-      value: classData[0], // id
       label: classData[1], // name
+      value: classData[1], // name
     };
 
     return {
@@ -88,7 +97,6 @@ export const fetchClassByTeacherId = async (
       data: classInfo,
     };
   } catch (error) {
-    console.error('Error fetching class data:', error);
     return {
       success: false,
       error: 'Failed to fetch class data',

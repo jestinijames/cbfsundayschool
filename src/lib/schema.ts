@@ -65,9 +65,9 @@ export const AttendanceFormSchema = z.object({
   }),
   students: z.array(
     z.object({
-      id: z.string(),
-      name: z.string(),
-      status: z.boolean(),
+      value: z.string(),
+      label: z.string(),
+      status: z.boolean().default(false),
     }),
   ),
 });
