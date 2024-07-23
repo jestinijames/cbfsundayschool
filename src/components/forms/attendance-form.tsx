@@ -86,7 +86,7 @@ export default function AttendanceForm() {
         const response = await fetchClassByTeacherId(selectedTeacher);
         if (response.success && response.data) {
           setAssignedClass(response.data);
-          setValue('class', response.data.id);
+          setValue('class', response.data.value);
         } else {
           toast({
             variant: 'destructive',
@@ -187,8 +187,8 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
 
   const usersData = useMemo(() => {
     return (teachers || []).map((teacher) => ({
-      label: teacher.name,
-      value: teacher.id,
+      label: teacher.label,
+      value: teacher.value,
     }));
   }, [teachers]);
 
@@ -312,7 +312,7 @@ function StudentsAssignedField({
     <>
       <Card className='mt-10'>
         <CardHeader>
-          <CardTitle>{assignedClass ? assignedClass.name : ''}</CardTitle>
+          <CardTitle>{assignedClass ? assignedClass.label : ''}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table className='mt-5'>

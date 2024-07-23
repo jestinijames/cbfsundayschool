@@ -1,10 +1,9 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
 
+import { DataTableColumnHeader } from '@/components/tables/attendance-tables/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 export type AttendanceRecord = {
   id: string;
@@ -18,73 +17,42 @@ export type AttendanceRecord = {
 export const columns: ColumnDef<AttendanceRecord>[] = [
   {
     accessorKey: 'student',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Student
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Student' />
+    ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: 'class',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Class
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Class' />
+    ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: 'teacher',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Teacher
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Teacher' />
+    ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: 'date',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Date
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Date' />
+    ),
   },
   {
     accessorKey: 'status',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Status
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Status' />
+    ),
     cell: ({ row }) => {
       const statusValue = row.original.status;
       const status =
@@ -95,6 +63,9 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         );
 
       return status;
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
 ];

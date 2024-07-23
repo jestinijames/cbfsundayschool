@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 'use server';
 
 import { google } from 'googleapis';
 
 export interface ClassData {
-  id: string;
-  name: string;
+  label: string;
+  value: string;
 }
 
 interface ReadAllClassesResponse {
@@ -46,7 +45,11 @@ export const readAllClasses = async (): Promise<ReadAllClassesResponse> => {
     const data: ClassData[] = rows.slice(1).map((row) => {
       const obj: Partial<ClassData> = {};
       header.forEach((key, index) => {
-        obj[key as keyof ClassData] = row[index];
+        //if (key === 'id') obj.value = row[index];
+        if (key === 'name') {
+          obj.label = row[index];
+          obj.value = row[index];
+        }
       });
       return obj as ClassData;
     });
@@ -56,7 +59,6 @@ export const readAllClasses = async (): Promise<ReadAllClassesResponse> => {
       data,
     };
   } catch (error) {
-    console.error('Error reading classes:', error);
     return {
       success: false,
       error: 'Failed to read classes',

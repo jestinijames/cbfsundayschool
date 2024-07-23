@@ -4,8 +4,8 @@
 import { google } from 'googleapis';
 
 interface ClassData {
-  id: string;
-  name: string;
+  label: string;
+  value: string;
 }
 
 interface FetchClassResponse {
@@ -79,8 +79,8 @@ export const fetchClassByTeacherId = async (
     }
 
     const classInfo: ClassData = {
-      id: classData[0],
-      name: classData[1],
+      value: classData[0], // id
+      label: classData[1], // name
     };
 
     return {

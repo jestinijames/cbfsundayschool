@@ -12,26 +12,10 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { DataTablePagination } from '@/components/tables/attendance-tables/data-table-pagination';
+import { DataTableToolbar } from '@/components/tables/attendance-tables/data-table-toolbar';
 import {
   Table,
   TableBody,
@@ -50,7 +34,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [date, setDate] = React.useState<Date>();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -78,76 +61,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div
-        className='flex flex-wrap items-end gap-2 py-4
-      '
-      >
-        <Input
-          placeholder='Filter students...'
-          value={(table.getColumn('student')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('student')?.setFilterValue(event.target.value)
-          }
-          className='max-w-sm'
-        />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant='outline'
-              className={cn(
-                'max-w-sm justify-start text-left font-normal ml-2',
-                !date && 'text-muted-foreground',
-              )}
-            >
-              <CalendarIcon className='mr-2 h-4 w-4' />
-              {date ? format(date, 'PPP') : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className='w-auto p-0' align='start'>
-            <Calendar
-              mode='single'
-              selected={date}
-              onSelect={(date) => {
-                setDate(date);
-                const formattedDate = date ? formatDate(date) : '';
-                table.getColumn('date')?.setFilterValue(formattedDate);
-              }}
-              initialFocus
-              disabled={(date) =>
-                // Only this year and only sundays
-                date.getFullYear() !== new Date().getFullYear() ||
-                date.getDay() !== 0
-              }
-            />
-          </PopoverContent>
-        </Popover>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant='outline' className='ml-auto'>
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className='capitalize'
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <DataTableToolbar table={table} />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
@@ -198,24 +112,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className='flex items-center justify-end space-x-2 py-4'>
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+      <DataTablePagination table={table} />
     </div>
   );
 }

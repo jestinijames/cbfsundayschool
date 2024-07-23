@@ -2,18 +2,18 @@
 
 import { google } from 'googleapis';
 
-export interface TeacherData {
+export interface StudentData {
   label: string;
   value: string;
 }
 
-interface ReadAllTeachersResponse {
+interface ReadAllStudentsResponse {
   success: boolean;
   error?: string;
-  data: TeacherData[];
+  data: StudentData[];
 }
 
-export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
+export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
   try {
     const auth = await google.auth.getClient({
       credentials: {
@@ -27,7 +27,7 @@ export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'assignments',
+      range: 'students',
     });
 
     const rows = response.data.values;
@@ -42,15 +42,15 @@ export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
 
     // Assuming the first row is the header
     const header = rows[0];
-    const data: TeacherData[] = rows.slice(1).map((row) => {
-      const obj: Partial<TeacherData> = {};
+    const data: StudentData[] = rows.slice(1).map((row) => {
+      const obj: Partial<StudentData> = {};
       header.forEach((key, index) => {
-        if (key === 'teacher') {
+        if (key === 'name') {
           obj.label = row[index];
           obj.value = row[index];
         }
       });
-      return obj as TeacherData;
+      return obj as StudentData;
     });
 
     return {
@@ -60,7 +60,7 @@ export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
   } catch (error) {
     return {
       success: false,
-      error: 'Failed to read teachers',
+      error: 'Failed to read students',
       data: [],
     };
   }

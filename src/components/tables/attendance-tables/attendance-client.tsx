@@ -41,11 +41,6 @@ export const AttendanceClient = () => {
     <>
       <div className='flex items-start justify-between'>
         <Heading
-          // title={`Students (
-          //   ${
-          //   data.length
-          //   }
-          //   )`}
           title='CBF Sunday School Attendance Tracker'
           description='View Student Attendance'
         />
