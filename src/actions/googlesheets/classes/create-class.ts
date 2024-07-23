@@ -32,7 +32,7 @@ export const createClass = async (
 
   const existingClasses = readResponse.data;
   const nameExists = existingClasses.some(
-    (classData) => classData.name === name,
+    (classData) => classData.label === name,
   );
 
   if (nameExists) {

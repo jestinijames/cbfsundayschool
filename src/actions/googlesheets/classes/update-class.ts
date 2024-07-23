@@ -32,7 +32,7 @@ export const updateClass = async (
 
   const existingClasses = readResponse.data;
   const classIndex = existingClasses.findIndex(
-    (classData) => classData.id === id,
+    (classData) => classData.value === id,
   );
 
   if (classIndex === -1) {
@@ -44,7 +44,7 @@ export const updateClass = async (
 
   // Check if the new name already exists (excluding the class being updated)
   const nameExists = existingClasses.some(
-    (classData) => classData.name === newName && classData.id !== id,
+    (classData) => classData.label === newName && classData.value !== id,
   );
 
   if (nameExists) {
@@ -55,7 +55,7 @@ export const updateClass = async (
   }
 
   // Update the class name
-  existingClasses[classIndex].name = newName;
+  existingClasses[classIndex].label = newName;
 
   try {
     const auth = await google.auth.getClient({
@@ -70,8 +70,8 @@ export const updateClass = async (
 
     // Convert the updated class data back to the format required by the Google Sheets API
     const updatedRows = existingClasses.map((classData) => [
-      classData.id,
-      classData.name,
+      classData.value,
+      classData.label,
     ]);
 
     await sheets.spreadsheets.values.update({

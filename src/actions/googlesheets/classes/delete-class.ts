@@ -29,7 +29,7 @@ export const deleteClass = async (id: string): Promise<DeleteClassResponse> => {
 
   const existingClasses = readResponse.data;
   const classIndex = existingClasses.findIndex(
-    (classData) => classData.id === id,
+    (classData) => classData.value === id,
   );
 
   if (classIndex === -1) {
@@ -55,8 +55,8 @@ export const deleteClass = async (id: string): Promise<DeleteClassResponse> => {
 
     // Convert the updated class data back to the format required by the Google Sheets API
     const updatedRows = existingClasses.map((classData) => [
-      classData.id,
-      classData.name,
+      classData.value,
+      classData.label,
     ]);
 
     await sheets.spreadsheets.values.update({
