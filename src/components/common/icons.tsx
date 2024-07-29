@@ -61,7 +61,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
-  attendance: SquarePenIcon,
+  tracker: SquarePenIcon,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

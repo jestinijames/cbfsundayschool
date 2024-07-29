@@ -1,6 +1,7 @@
 import { Column } from '@tanstack/react-table';
 import { CheckIcon, CirclePlusIcon } from 'lucide-react';
 import * as React from 'react';
+import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -40,8 +41,10 @@ export function DataTableFacetedFilter<TData, TValue>({
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
 
+  const [popOverOpen, setPopOverOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
       <PopoverTrigger asChild>
         <Button variant='outline' size='sm' className='h-8 border-dashed'>
           <CirclePlusIcon className='mr-2 h-4 w-4' />
@@ -102,6 +105,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                       column?.setFilterValue(
                         filterValues.length ? filterValues : undefined,
                       );
+                      setPopOverOpen(false);
                     }}
                   >
                     <div
@@ -132,7 +136,10 @@ export function DataTableFacetedFilter<TData, TValue>({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={() => column?.setFilterValue(undefined)}
+                    onSelect={() => {
+                      column?.setFilterValue(undefined);
+                      setPopOverOpen(false);
+                    }}
                     className='justify-center text-center'
                   >
                     Clear filters

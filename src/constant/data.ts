@@ -10,10 +10,10 @@ export const navItems: NavItem[] = [
     label: 'Dashboard',
   },
   {
-    title: 'Attendance',
-    href: '/dashboard/attendance',
-    icon: 'attendance',
-    label: 'Attendance',
+    title: 'Tracker',
+    href: '/dashboard/tracker',
+    icon: 'tracker',
+    label: 'Tracker',
   },
 ];
 

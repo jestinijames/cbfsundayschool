@@ -1,9 +1,6 @@
 'use client';
-import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 // import { DataTable } from '@/components/ui/data-table';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
@@ -15,7 +12,6 @@ import { AttendanceRecord, columns } from './columns';
 import { DataTable } from './data-table';
 
 export const AttendanceClient = () => {
-  const router = useRouter();
   const [attendanceRecords, setAttendanceRecords] = useState<
     AttendanceRecord[]
   >([]);
@@ -44,13 +40,6 @@ export const AttendanceClient = () => {
           title='CBF Sunday School Attendance Tracker'
           description='View Student Attendance'
         />
-        <Button
-          variant='outline'
-          className='text-xs md:text-sm '
-          onClick={() => router.push(`/dashboard/attendance/new`)}
-        >
-          <Plus className='mr-2 h-4 w-4' /> Mark New
-        </Button>
       </div>
       <Separator />
       <DataTable columns={columns} data={attendanceRecords} />
