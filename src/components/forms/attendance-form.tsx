@@ -2,15 +2,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { CalendarIcon, CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
 
 import { AttendanceFormSchema } from '@/lib/schema';
 import { cn } from '@/lib/utils';
 
+import { Button } from '@/components/custom/button';
 import { formatDate } from '@/components/tables/attendance-tables/data-table';
-import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -55,6 +56,7 @@ import {
   submitAttendance,
 } from '@/actions/googlesheets/attendance/submit-attendance';
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
+import { readTeacherByEmail } from '@/actions/googlesheets/teachers/read-teacher-by-email';
 import {
   readAllTeachers,
   TeacherData,
@@ -74,6 +76,21 @@ export default function AttendanceForm() {
     //formState: { errors },
   } = markAttendanceMethods;
   const selectedTeacher = watch('teacher');
+
+  const { data: session } = useSession();
+  const teacherEmail = session?.user?.email;
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (teacherEmail) {
+        const response = await readTeacherByEmail(teacherEmail);
+        if (response.success && response.teacherName) {
+          setValue('teacher', response.teacherName);
+        }
+      }
+    };
+    fetchInitialData();
+  }, [teacherEmail, setValue]);
 
   useEffect(() => {
     if (selectedTeacher) {
@@ -96,6 +113,18 @@ export default function AttendanceForm() {
   }, [selectedTeacher, setValue]);
 
   const onSubmit = async (data: z.infer<typeof AttendanceFormSchema>) => {
+    const studentAttendance = watch('students');
+    //  Go through studentAttendance and check if all students are absent
+    const allAbsent = studentAttendance.every((student) => !student.status);
+    if (allAbsent) {
+      toast({
+        variant: 'destructive',
+        title: 'All students are absent',
+        description: 'Please mark attendance for at least one student.',
+      });
+      return;
+    }
+
     setLoading(true);
 
     const attendanceData: AttendanceData = {
@@ -145,7 +174,7 @@ export default function AttendanceForm() {
             />
             <Button
               disabled={isMutating}
-              className='ml-auto text-white mt-10'
+              className='ml-auto mt-10'
               type='submit'
             >
               Mark Attendance
@@ -160,7 +189,6 @@ export default function AttendanceForm() {
 function TeachersField({ isMutating }: { isMutating: boolean }) {
   const { control, setValue } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
-
   const [popOverOpen, setPopOverOpen] = useState(false);
 
   useEffect(() => {
@@ -251,6 +279,15 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
 function DateField({ isMutating }: { isMutating: boolean }) {
   const [popOverOpen, setPopOverOpen] = useState(false);
   const { control } = useFormContext();
+  const startOfJuly = useMemo(
+    () => new Date(new Date().getFullYear(), 6, 1),
+    [],
+  );
+  const endOfApril = useMemo(
+    () => new Date(new Date().getFullYear() + 1, 3, 30),
+    [],
+  );
+
   return (
     <FormField
       control={control}
@@ -286,11 +323,13 @@ function DateField({ isMutating }: { isMutating: boolean }) {
               <Calendar
                 mode='single'
                 selected={field.value as Date}
-                disabled={(date) =>
-                  // Only this year and only sundays
-                  date.getFullYear() !== new Date().getFullYear() ||
-                  date.getDay() !== 0
-                }
+                disabled={(date) => {
+                  return (
+                    date < startOfJuly ||
+                    date > endOfApril ||
+                    date.getDay() !== 0 // Disable if not Sunday
+                  );
+                }}
                 initialFocus
                 onSelect={(date) => {
                   field.onChange(date);
@@ -355,7 +394,7 @@ function StudentsAssignedField({
             <TableHeader>
               <TableRow>
                 <TableHead className='relative'>Student</TableHead>
-                <TableHead className='relative'>Status</TableHead>
+                <TableHead className='relative'>Attendance</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -15,6 +15,7 @@ const nextConfig = {
       'cloudflare-ipfs.com',
       'source.unsplash.com',
       'i.ytimg.com',
+      'cbf-church.org',
     ],
   },
 

@@ -2,18 +2,15 @@
 
 import { google } from 'googleapis';
 
-export interface TeacherData {
-  label: string;
-  value: string;
-}
-
-interface ReadAllTeachersResponse {
+interface ReadTeacherByEmailResponse {
   success: boolean;
   error?: string;
-  data: TeacherData[];
+  teacherName?: string;
 }
 
-export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
+export const readTeacherByEmail = async (
+  emailId: string,
+): Promise<ReadTeacherByEmailResponse> => {
   try {
     const auth = await google.auth.getClient({
       credentials: {
@@ -36,35 +33,38 @@ export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
       return {
         success: false,
         error: 'No data found',
-        data: [],
       };
     }
 
-    // Assuming the first row is the header
     const header = rows[0];
-    const data: TeacherData[] = rows.slice(1).map((row) => {
-      const obj: Partial<TeacherData> = {};
-      header.forEach((key, index) => {
-        if (key === 'teacher') {
-          obj.label = row[index];
-          obj.value = row[index];
-        }
-      });
-      return obj as TeacherData;
-    });
+    const emailIndex = header.indexOf('email_id');
+    const teacherIndex = header.indexOf('teacher');
 
-    // Sort the data by the 'label' property in ascending order
-    data.sort((a, b) => a.label.localeCompare(b.label));
+    if (emailIndex === -1 || teacherIndex === -1) {
+      return {
+        success: false,
+        error: 'Required columns not found',
+      };
+    }
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (row[emailIndex] === emailId) {
+        return {
+          success: true,
+          teacherName: row[teacherIndex],
+        };
+      }
+    }
 
     return {
-      success: true,
-      data,
+      success: false,
+      error: 'Teacher not found',
     };
   } catch (error) {
     return {
       success: false,
-      error: 'Failed to read teachers',
-      data: [],
+      error: 'Failed to search for teacher',
     };
   }
 };
