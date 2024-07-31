@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 export interface AttendanceData {
   teacher: string;
   class: string;
+  lesson: string;
   date: string;
   students: {
     value: string;
@@ -85,6 +86,32 @@ export const submitAttendance = async (
     }
     const teacherId = teacherData[0];
 
+    // Fetch lessonId from lesson name
+    const lessonsResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'lessons!A2:C',
+    });
+
+    const lessonRows = lessonsResponse.data.values;
+
+    if (!lessonRows || lessonRows.length === 0) {
+      return {
+        success: false,
+        error: 'No data found in lessons sheet',
+      };
+    }
+
+    const lessonData = lessonRows.find(
+      (row) => row[1] === attendanceData.lesson,
+    );
+    if (!lessonData) {
+      return {
+        success: false,
+        error: 'Lesson not found in lessons sheet',
+      };
+    }
+    const lessonId = lessonData[0];
+
     // Fetch existing attendance records
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -127,7 +154,8 @@ export const submitAttendance = async (
         (row) =>
           row[1] === studentId &&
           row[2] === classId &&
-          row[4] === formattedDate,
+          row[4] === formattedDate &&
+          row[6] === lessonId,
       );
 
       if (existingRow) {
@@ -146,6 +174,7 @@ export const submitAttendance = async (
           teacherId,
           formattedDate,
           student.status ? 'Present' : 'Absent',
+          lessonId,
         ]);
       }
     }

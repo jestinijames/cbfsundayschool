@@ -50,6 +50,10 @@ import {
 import { toast } from '@/components/ui/use-toast';
 
 import { fetchClassByTeacherName } from '@/actions/googlesheets/attendance/fetch-class-by-teacher-name';
+import {
+  fetchLessonByClassName,
+  LessonData,
+} from '@/actions/googlesheets/attendance/fetch-lesson-by-class-name';
 import { fetchStudentsByClassName } from '@/actions/googlesheets/attendance/fetch-students-by-class-name';
 import {
   AttendanceData,
@@ -68,6 +72,7 @@ export default function AttendanceForm() {
   });
 
   const [assignedClass, setAssignedClass] = useState<ClassData | null>(null);
+
   const [loading, setLoading] = useState<boolean>(false);
 
   const {
@@ -111,6 +116,27 @@ export default function AttendanceForm() {
       fetchClass();
     }
   }, [selectedTeacher, setValue]);
+
+  //   useEffect(() => {
+  //     if (assignedClass) {
+  //       const fetchLesson = async () => {
+  //         const response = await fetchLessonByClassName(assignedClass.label);
+  //         if (response.success && response.data) {
+  //           setClassLession(response.data);
+  //         } else {
+  //           toast({
+  //             variant: 'destructive',
+  //             title: 'Something went wrong.',
+  //             description: response.error,
+  //           });
+  //         }
+  //       };
+
+  //       fetchLesson();
+  //     }
+  //   }
+
+  // },[])
 
   const onSubmit = async (data: z.infer<typeof AttendanceFormSchema>) => {
     const studentAttendance = watch('students');
@@ -165,7 +191,8 @@ export default function AttendanceForm() {
         <Form {...markAttendanceMethods}>
           <form onSubmit={markAttendanceMethods.handleSubmit(onSubmit)}>
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
-              <TeachersField isMutating={isMutating} />
+              <TeacherField isMutating={isMutating} />
+              <LessonField isMutating={isMutating} />
               <DateField isMutating={isMutating} />
             </div>
             <StudentsAssignedField
@@ -186,7 +213,7 @@ export default function AttendanceForm() {
   );
 }
 
-function TeachersField({ isMutating }: { isMutating: boolean }) {
+function TeacherField({ isMutating }: { isMutating: boolean }) {
   const { control, setValue } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [popOverOpen, setPopOverOpen] = useState(false);
@@ -261,6 +288,100 @@ function TeachersField({ isMutating }: { isMutating: boolean }) {
                           )}
                         />
                         {teacher.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </div>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function LessonField({ isMutating }: { isMutating: boolean }) {
+  const { control, setValue, watch } = useFormContext();
+  const [lessons, setLessons] = useState<LessonData[]>([]);
+
+  const selectedClass = watch('class');
+
+  const [popOverOpen, setPopOverOpen] = useState(false);
+
+  useEffect(() => {
+    if (selectedClass) {
+      const fetchLessons = async () => {
+        const response = await fetchLessonByClassName(selectedClass);
+        if (response.success && response.data) {
+          setLessons(response.data);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Something went wrong.',
+            description: response.error,
+          });
+        }
+      };
+      fetchLessons();
+    }
+  }, [selectedClass, setValue]);
+
+  return (
+    <FormField
+      control={control}
+      name='lesson'
+      render={({ field }) => (
+        <FormItem className='mt-3 flex flex-col'>
+          <FormLabel htmlFor='lesson'>Lesson</FormLabel>
+          <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant='outline'
+                  role='combobox'
+                  disabled={isMutating}
+                  aria-disabled={isMutating}
+                  className={cn(
+                    'justify-between',
+
+                    !field.value && 'text-accent-foreground',
+                  )}
+                >
+                  {field.value
+                    ? lessons.find((lesson) => lesson.value === field.value)
+                        ?.label
+                    : 'Select lesson'}
+                  <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
+              <Command>
+                <CommandInput placeholder='Search lesson...' />
+                <CommandEmpty>No lessons found.</CommandEmpty>
+                <div className='max-h-40 overflow-y-auto'>
+                  <CommandGroup>
+                    {lessons.map((lesson) => (
+                      <CommandItem
+                        key={lesson.value}
+                        value={lesson.value}
+                        onSelect={() => {
+                          setValue('lesson', lesson.value);
+                          setPopOverOpen(false);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            'mr-2 size-4',
+                            lesson.value.toLowerCase() === field.value
+                              ? 'opacity-100'
+                              : 'opacity-0',
+                          )}
+                        />
+                        {lesson.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>

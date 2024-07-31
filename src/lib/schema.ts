@@ -60,6 +60,7 @@ export const AttendanceFormSchema = z.object({
   id: z.string().optional().nullable(),
   teacher: z.string(),
   class: z.string(),
+  lesson: z.string(),
   date: z.date().min(new Date('1970-01-01'), {
     message: 'Date is out of range',
   }),

@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 
 import { fetchAttendanceRecords } from '@/actions/googlesheets/attendance/fetch-attendance-records';
 
-import { AttendanceRecord, columns } from './columns';
+import { type AttendanceRecord, columns } from './columns';
 import { DataTable } from './data-table';
 
 export const AttendanceClient = () => {
@@ -48,9 +48,9 @@ export const AttendanceClient = () => {
         </div>
         <Separator />
         <DataTableSkeleton
-          columnCount={5}
+          columnCount={6}
           filterableColumnCount={6}
-          cellWidths={['12rem', '12rem', '12rem', '12rem', '12rem']}
+          cellWidths={['12rem', '12rem', '12rem', '12rem', '12rem', '12rem']}
           shrinkZero
         />
       </>

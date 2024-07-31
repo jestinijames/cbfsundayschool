@@ -43,6 +43,15 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
     },
   },
   {
+    accessorKey: 'lesson',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Lesson' />
+    ),
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
     accessorKey: 'date',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Date' />
@@ -51,7 +60,7 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
   {
     accessorKey: 'status',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
+      <DataTableColumnHeader column={column} title='Attendance' />
     ),
     cell: ({ row }) => {
       const statusValue = row.original.status;

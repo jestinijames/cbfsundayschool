@@ -8,6 +8,7 @@ export interface AttendanceRecord {
   teacher: string;
   date: string;
   status: string;
+  lesson: string;
 }
 
 interface Response {
@@ -48,14 +49,21 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
       range: 'assignments!A2:B',
     });
 
+    const lessonsResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: 'lessons!A2:C',
+    });
+
     const attendanceRows = attendanceResponse.data.values || [];
     const studentsRows = studentsResponse.data.values || [];
     const classesRows = classesResponse.data.values || [];
     const assignmentsRows = assignmentsResponse.data.values || [];
+    const lessonsRows = lessonsResponse.data.values || [];
 
     const studentsMap = new Map(studentsRows.map((row) => [row[0], row[1]])); // id -> name
     const classesMap = new Map(classesRows.map((row) => [row[0], row[1]])); // id -> name
     const teachersMap = new Map(assignmentsRows.map((row) => [row[0], row[1]])); // id -> name
+    const lessonsMap = new Map(lessonsRows.map((row) => [row[0], row[1]])); // id -> name
 
     const attendanceRecords: AttendanceRecord[] = attendanceRows.map((row) => ({
       id: row[0],
@@ -64,6 +72,7 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
       teacher: teachersMap.get(row[3]) || 'Unknown',
       date: row[4],
       status: row[5],
+      lesson: lessonsMap.get(row[6]) || 'Unknown',
     }));
 
     return { success: true, data: attendanceRecords };
