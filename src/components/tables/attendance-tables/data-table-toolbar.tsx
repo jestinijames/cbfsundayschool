@@ -1,8 +1,9 @@
 import { Table } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { CalendarIcon, XIcon } from 'lucide-react';
+import { CalendarIcon, DownloadIcon, XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { exportTableToCSV } from '@/lib/export';
 import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/custom/button';
@@ -168,6 +169,19 @@ export function DataTableToolbar<TData>({
             <XIcon className='ml-2 h-4 w-4' />
           </Button>
         )}
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={() =>
+            exportTableToCSV(table, {
+              filename: 'tasks',
+              excludeColumns: ['select', 'actions'],
+            })
+          }
+        >
+          <DownloadIcon className='mr-2 size-4' aria-hidden='true' />
+          Export
+        </Button>
       </div>
       <DataTableViewOptions table={table} />
     </div>

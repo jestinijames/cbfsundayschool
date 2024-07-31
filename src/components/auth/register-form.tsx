@@ -10,7 +10,7 @@ import { RegisterFormSchema, RegisterFormType } from '@/lib/schema';
 
 import ErrorAlert from '@/components/alerts/error-alert';
 import SuccessAlert from '@/components/alerts/success-alert';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/custom/button';
 import {
   Form,
   FormControl,
@@ -120,7 +120,6 @@ export default function RegisterForm() {
                         <Button
                           type='button'
                           size='default'
-                          variant='ghost'
                           className='rounded-full'
                           onClick={() => setShowPassword(!showPassword)}
                         >
@@ -130,7 +129,6 @@ export default function RegisterForm() {
                         <Button
                           type='button'
                           size='default'
-                          variant='ghost'
                           className='rounded-full'
                           onClick={() => setShowPassword(!showPassword)}
                         >
@@ -166,7 +164,7 @@ export default function RegisterForm() {
           {error ? <ErrorAlert error={error} /> : null}
           {success ? <SuccessAlert success={success} /> : null}
 
-          <Button variant='outline' type='submit' disabled={isPending}>
+          <Button type='submit' disabled={isPending}>
             {isPending ? (
               <span className='flex gap-2'>
                 <LoaderCircle className='animate-spin' />

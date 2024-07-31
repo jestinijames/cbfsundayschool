@@ -12,7 +12,7 @@ import { NewPasswordFormType, NewPasswordSchema } from '@/lib/schema';
 
 import ErrorAlert from '@/components/alerts/error-alert';
 import SuccessAlert from '@/components/alerts/success-alert';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/custom/button';
 import {
   Form,
   FormControl,
