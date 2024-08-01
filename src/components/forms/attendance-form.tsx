@@ -117,27 +117,6 @@ export default function AttendanceForm() {
     }
   }, [selectedTeacher, setValue]);
 
-  //   useEffect(() => {
-  //     if (assignedClass) {
-  //       const fetchLesson = async () => {
-  //         const response = await fetchLessonByClassName(assignedClass.label);
-  //         if (response.success && response.data) {
-  //           setClassLession(response.data);
-  //         } else {
-  //           toast({
-  //             variant: 'destructive',
-  //             title: 'Something went wrong.',
-  //             description: response.error,
-  //           });
-  //         }
-  //       };
-
-  //       fetchLesson();
-  //     }
-  //   }
-
-  // },[])
-
   const onSubmit = async (data: z.infer<typeof AttendanceFormSchema>) => {
     const studentAttendance = watch('students');
     //  Go through studentAttendance and check if all students are absent

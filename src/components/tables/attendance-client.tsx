@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 import { DataTableSkeleton } from '@/components/tables/attendance-table/data-table-skeleton';
-import { overallreportcolumns } from '@/components/tables/attendance-table/overall-reports-table/overall-report-columns';
-import { OverallReportDataTable } from '@/components/tables/attendance-table/overall-reports-table/overall-report-data-table';
+import { overallreportcolumns } from '@/components/tables/overall-reports-table/overall-report-columns';
+import { OverallReportDataTable } from '@/components/tables/overall-reports-table/overall-report-data-table';
 import { WeeklyReportDataTable } from '@/components/tables/weekly-reports-table/weekly-report-data-table';
 import { weeklyreportcolumns } from '@/components/tables/weekly-reports-table/weely-report-columns';
 // import { DataTable } from '@/components/ui/data-table';
@@ -22,8 +22,8 @@ import {
   TeacherData,
 } from '@/actions/googlesheets/teachers/read-teachers';
 
-import { type AttendanceRecord, columns } from './columns';
-import { DataTable } from './data-table';
+import { type AttendanceRecord, columns } from './attendance-table/columns';
+import { DataTable } from './attendance-table/data-table';
 
 interface WeeklyClassAttendancePercentage {
   date: string;

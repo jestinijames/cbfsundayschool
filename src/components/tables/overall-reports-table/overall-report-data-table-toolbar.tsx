@@ -57,7 +57,7 @@ export function OverallReportDataTableToolbar<TData>({
           size='sm'
           onClick={() =>
             exportTableToCSV(table, {
-              filename: 'tasks',
+              filename: 'overall-reports',
               excludeColumns: ['select', 'actions'],
             })
           }

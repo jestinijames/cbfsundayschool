@@ -15,7 +15,7 @@ import {
 import * as React from 'react';
 
 import { DataTablePagination } from '@/components/tables/attendance-table/data-table-pagination';
-import { OverallReportDataTableToolbar } from '@/components/tables/attendance-table/overall-reports-table/overall-report-data-table-toolbar';
+import { OverallReportDataTableToolbar } from '@/components/tables/overall-reports-table/overall-report-data-table-toolbar';
 import {
   Table,
   TableBody,

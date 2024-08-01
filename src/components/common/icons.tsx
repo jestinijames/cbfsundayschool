@@ -19,6 +19,7 @@ import {
   LucideProps,
   Moon,
   MoreVertical,
+  NotepadTextIcon,
   Pizza,
   Plus,
   Settings,
@@ -62,6 +63,7 @@ export const Icons = {
   moon: Moon,
   laptop: Laptop,
   tracker: SquarePenIcon,
+  report: NotepadTextIcon,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

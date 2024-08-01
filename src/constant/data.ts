@@ -15,6 +15,12 @@ export const navItems: NavItem[] = [
     icon: 'tracker',
     label: 'Tracker',
   },
+  {
+    title: 'Report',
+    href: '/dashboard/attendance-report',
+    icon: 'report',
+    label: 'Report',
+  },
 ];
 
 export const statuses = [

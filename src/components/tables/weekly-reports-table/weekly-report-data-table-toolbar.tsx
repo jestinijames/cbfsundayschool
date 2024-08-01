@@ -94,7 +94,7 @@ export function WeeklyReportDataTableToolbar<TData>({
           size='sm'
           onClick={() =>
             exportTableToCSV(table, {
-              filename: 'tasks',
+              filename: 'weekly-reports',
               excludeColumns: ['select', 'actions'],
             })
           }

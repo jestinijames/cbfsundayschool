@@ -4,7 +4,7 @@ import { PresentationIcon, SpeechIcon, UsersIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
-import { AttendanceClient } from '@/components/tables/attendance-table/attendance-client';
+import { AttendanceClient } from '@/components/tables/attendance-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
