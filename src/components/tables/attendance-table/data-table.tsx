@@ -14,8 +14,8 @@ import {
 } from '@tanstack/react-table';
 import * as React from 'react';
 
-import { DataTablePagination } from '@/components/tables/attendance-tables/data-table-pagination';
-import { DataTableToolbar } from '@/components/tables/attendance-tables/data-table-toolbar';
+import { DataTablePagination } from '@/components/tables/attendance-table/data-table-pagination';
+import { DataTableToolbar } from '@/components/tables/attendance-table/data-table-toolbar';
 import {
   Table,
   TableBody,
@@ -25,14 +25,24 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+import { ClassData } from '@/actions/googlesheets/classes/read-classes';
+import { StudentData } from '@/actions/googlesheets/students/read-students';
+import { TeacherData } from '@/actions/googlesheets/teachers/read-teachers';
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  classes: ClassData[];
+  teachers: TeacherData[];
+  students: StudentData[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  classes,
+  teachers,
+  students,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -61,7 +71,12 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar
+        table={table}
+        classes={classes}
+        teachers={teachers}
+        students={students}
+      />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>

@@ -1,127 +1,45 @@
 import { Table } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { CalendarIcon, DownloadIcon, XIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { exportTableToCSV } from '@/lib/export';
 import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/custom/button';
-import { formatDate } from '@/components/tables/attendance-tables/data-table';
-import { DataTableViewOptions } from '@/components/tables/attendance-tables/data-table-view-options';
+import { formatDate } from '@/components/tables/attendance-table/data-table';
+import { DataTableFacetedFilter } from '@/components/tables/attendance-table/data-table-faceted-filter';
+import { DataTableViewOptions } from '@/components/tables/attendance-table/data-table-view-options';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { toast } from '@/components/ui/use-toast';
 
-import {
-  ClassData,
-  readAllClasses,
-} from '@/actions/googlesheets/classes/read-classes';
-import {
-  readAllStudents,
-  StudentData,
-} from '@/actions/googlesheets/students/read-students';
-import {
-  readAllTeachers,
-  TeacherData,
-} from '@/actions/googlesheets/teachers/read-teachers';
-import { statuses } from '@/constant/data';
-
-import { DataTableFacetedFilter } from './data-table-faceted-filter';
+import { ClassData } from '@/actions/googlesheets/classes/read-classes';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  classes: ClassData[];
 }
 
-export function DataTableToolbar<TData>({
+export function WeeklyReportDataTableToolbar<TData>({
   table,
+  classes,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
-
-  const [classes, setClasses] = useState<ClassData[]>([]);
-  const [teachers, setTeachers] = useState<TeacherData[]>([]);
-  const [students, setStudents] = useState<StudentData[]>([]);
-  const [date, setDate] = useState<Date>();
-
-  useEffect(() => {
-    const fetchClasses = async () => {
-      const response = await readAllClasses();
-      if (response.success && response.data) {
-        setClasses(response.data);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
-      }
-    };
-    const fetchTeachers = async () => {
-      const response = await readAllTeachers();
-      if (response.success) {
-        setTeachers(response.data);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
-      }
-    };
-
-    const fetchStudents = async () => {
-      const response = await readAllStudents();
-      if (response.success) {
-        setStudents(response.data);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
-      }
-    };
-
-    fetchClasses();
-    fetchTeachers();
-    fetchStudents();
-  }, []);
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <div className='flex items-center justify-between flex-wrap gap-2 py-4'>
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
         <div className='flex gap-x-2 gap-y-2 flex-wrap'>
-          {table.getColumn('student') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('student')}
-              title='Student'
-              options={students}
-            />
-          )}
-          {table.getColumn('status') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('status')}
-              title='Status'
-              options={statuses}
-            />
-          )}
-
           {table.getColumn('class') && (
             <DataTableFacetedFilter
               column={table.getColumn('class')}
               title='Class'
               options={classes}
-            />
-          )}
-          {table.getColumn('teacher') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('teacher')}
-              title='Teacher'
-              options={teachers}
             />
           )}
           <Popover>
@@ -142,9 +60,11 @@ export function DataTableToolbar<TData>({
               <Calendar
                 mode='single'
                 selected={date}
-                onSelect={(date) => {
-                  setDate(date);
-                  const formattedDate = date ? formatDate(date) : '';
+                onSelect={(selectedDate) => {
+                  setDate(selectedDate);
+                  const formattedDate = selectedDate
+                    ? formatDate(selectedDate)
+                    : '';
                   table.getColumn('date')?.setFilterValue(formattedDate);
                 }}
                 initialFocus

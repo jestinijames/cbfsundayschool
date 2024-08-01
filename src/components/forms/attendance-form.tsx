@@ -11,7 +11,7 @@ import { AttendanceFormSchema } from '@/lib/schema';
 import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/custom/button';
-import { formatDate } from '@/components/tables/attendance-tables/data-table';
+import { formatDate } from '@/components/tables/attendance-table/data-table';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {

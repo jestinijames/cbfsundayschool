@@ -2,7 +2,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 
-import { DataTableColumnHeader } from '@/components/tables/attendance-tables/data-table-column-header';
+import { DataTableColumnHeader } from '@/components/tables/attendance-table/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
 
 export type AttendanceRecord = {
