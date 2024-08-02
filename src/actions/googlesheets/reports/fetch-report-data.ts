@@ -91,6 +91,7 @@ export const fetchReportData = async (): Promise<Response> => {
     >();
 
     attendanceRows.forEach((row) => {
+      //  console.log('Attendance Row:', row); // Debug log
       const studentId = row[1];
       const date = row[4];
       const status = row[5];
@@ -112,11 +113,12 @@ export const fetchReportData = async (): Promise<Response> => {
     // Calculate overall attendance percentage
     const overallAttendanceMap = new Map<string, string>();
     studentAttendanceMap.forEach((value, studentId) => {
+      const totalClasses = value.totalClasses || 1; // Prevent division by zero
       const attendancePercentage =
-        (value.presentDates.size / value.totalClasses) * 100;
+        (value.presentDates.size / totalClasses) * 100;
       overallAttendanceMap.set(
         studentId,
-        `${attendancePercentage.toFixed(2)}%`,
+        `${Math.ceil(attendancePercentage)}%`,
       );
     });
 
@@ -137,7 +139,7 @@ export const fetchReportData = async (): Promise<Response> => {
               const lessonName = lessonsMap.get(row[6]) || 'N/A';
               const teacherName = teachersMap.get(row[3]) || 'N/A';
 
-              const classAttendance = `${((classStudentsMap.get(row[2])?.filter((studentId) => studentId === row[1]).length || 0) / classStudentsMap.get(row[2])!.length) * 100}%`;
+              const classAttendance = `${Math.ceil(((classStudentsMap.get(row[2])?.filter((studentId) => studentId === row[1]).length || 0) / classStudentsMap.get(row[2])!.length) * 100)}%`;
 
               weekDataMap.get(`week${week}`)!.push({
                 date,
@@ -159,7 +161,7 @@ export const fetchReportData = async (): Promise<Response> => {
       const studentName = studentRow[1];
       const classId = studentRow[2];
       const className = classesMap.get(classId) || 'N/A';
-      const overallAttendance = overallAttendanceMap.get(studentId) || 'N/A';
+      const overallAttendance = overallAttendanceMap.get(studentId) || '0%';
       const weekData = Array.from(
         { length: 40 },
         (_, i) => weekDataMap.get(`week${i + 1}`) || [],

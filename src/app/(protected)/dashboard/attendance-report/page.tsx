@@ -11,15 +11,51 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 
 import {
+  ClassData,
+  readAllClasses,
+} from '@/actions/googlesheets/classes/read-classes';
+import {
   fetchReportData,
   ReportData,
 } from '@/actions/googlesheets/reports/fetch-report-data';
+import {
+  readAllStudents,
+  StudentData,
+} from '@/actions/googlesheets/students/read-students';
 
 export default function DashboardPage() {
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [students, setStudents] = useState<StudentData[]>([]);
   const [reportRecords, setReportRecords] = useState<ReportData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchClasses = async () => {
+      const response = await readAllClasses();
+      if (response.success && response.data) {
+        setClasses(response.data);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Something went wrong.',
+          description: response.error,
+        });
+      }
+    };
+
+    const fetchStudents = async () => {
+      const response = await readAllStudents();
+      if (response.success) {
+        setStudents(response.data);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Something went wrong.',
+          description: response.error,
+        });
+      }
+    };
+
     const fetchData = async () => {
       setIsLoading(true);
       const response = await fetchReportData();
@@ -36,6 +72,8 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     };
+    fetchClasses();
+    fetchStudents();
     fetchData();
   }, []);
 
@@ -74,20 +112,25 @@ export default function DashboardPage() {
 
   return (
     <>
-      <ScrollArea className='h-full'>
-        <div className='flex-1 space-y-4 p-5'>
-          <div className='flex items-center justify-between'>
-            <Heading
-              title='Attendance Report'
-              description='Full attendance report'
-            />
-          </div>
-          <Separator />
-          <section className='flex flex-col gap-y-4'>
-            <ReportDataTable columns={reportcolumns} data={reportRecords} />
-          </section>
+      {/* <ScrollArea className='h-full'> */}
+      <div className='flex-1 space-y-4 p-5'>
+        <div className='flex items-center justify-between'>
+          <Heading
+            title='Attendance Report'
+            description='Full attendance report'
+          />
         </div>
-      </ScrollArea>
+        <Separator />
+        <section className='flex flex-col gap-y-4'>
+          <ReportDataTable
+            columns={reportcolumns}
+            data={reportRecords}
+            classes={classes}
+            students={students}
+          />
+        </section>
+      </div>
+      {/* </ScrollArea> */}
     </>
   );
 }

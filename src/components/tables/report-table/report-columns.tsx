@@ -26,6 +26,20 @@ const staticColumns: ColumnDef<ReportData>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
+    cell: ({ row }) => {
+      const attendancePercentage = row.getValue('overallAttendance') as string;
+      const percentage = parseInt(attendancePercentage, 10);
+
+      // Determine badge variant based on attendance percentage
+      const badgeVariant =
+        percentage >= 90
+          ? 'success'
+          : percentage >= 80
+            ? 'warning'
+            : 'destructive';
+
+      return <Badge variant={badgeVariant}>{attendancePercentage}</Badge>;
+    },
   },
   {
     accessorKey: 'className',
@@ -107,7 +121,7 @@ const generateWeekColumns = (
           return (
             <Badge
               variant={
-                parseFloat(attendanceValue) >= 80 ? 'success' : 'destructive'
+                parseInt(attendanceValue) >= 80 ? 'success' : 'destructive'
               }
             >
               {attendanceValue}
