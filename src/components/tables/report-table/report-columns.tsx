@@ -3,147 +3,82 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { DataTableColumnHeader } from '@/components/tables/attendance-table/data-table-column-header';
+import { calculateOverallAttendance } from '@/components/tables/report-table/report-transform-data';
 import { Badge } from '@/components/ui/badge';
 
-import { ReportData } from '@/actions/googlesheets/reports/fetch-report-data';
-
-// Define the static columns
-const staticColumns: ColumnDef<ReportData>[] = [
-  {
-    accessorKey: 'studentName',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Student Name' />
-    ),
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: 'overallAttendance',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Overall Attendance' />
-    ),
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-    cell: ({ row }) => {
-      const attendancePercentage = row.getValue('overallAttendance') as string;
-      const percentage = parseInt(attendancePercentage, 10);
-
-      // Determine badge variant based on attendance percentage
-      const badgeVariant =
-        percentage >= 90
-          ? 'success'
-          : percentage >= 80
-            ? 'warning'
-            : 'destructive';
-
-      return <Badge variant={badgeVariant}>{attendancePercentage}</Badge>;
-    },
-  },
-  {
-    accessorKey: 'className',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Class Name' />
-    ),
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-];
-
-// Function to generate week columns dynamically
-const generateWeekColumns = (
-  weekData: {
-    date: string;
-    lesson: string;
-    teacher: string;
-    classAttendance: string;
-  }[],
-): ColumnDef<ReportData>[] => {
-  const weekColumns: ColumnDef<ReportData>[] = [];
-
-  // Extract unique week dates and lessons from the weekData
-  weekData.forEach((week, index) => {
-    const weekNumber = Math.ceil((index + 1) / 1); // Adjust according to your week definition
-
-    weekColumns.push(
-      {
-        accessorKey: `week_${weekNumber}_date`,
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={`Week ${weekNumber} Date`}
-          />
-        ),
-        cell: ({ row }) => {
-          const weekItem = row.original.weekData[index];
-          return weekItem ? weekItem.date : 'N/A';
-        },
-      },
-      {
-        accessorKey: `week_${weekNumber}_lesson`,
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={`Week ${weekNumber} Lesson`}
-          />
-        ),
-        cell: ({ row }) => {
-          const weekItem = row.original.weekData[index];
-          return weekItem ? weekItem.lesson : 'N/A';
-        },
-      },
-      {
-        accessorKey: `week_${weekNumber}_teacher`,
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={`Week ${weekNumber} Teacher`}
-          />
-        ),
-        cell: ({ row }) => {
-          const weekItem = row.original.weekData[index];
-          return weekItem ? weekItem.teacher : 'N/A';
-        },
-      },
-      {
-        accessorKey: `week_${weekNumber}_attendance`,
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={`Week ${weekNumber} Class Attendance`}
-          />
-        ),
-        cell: ({ row }) => {
-          const weekItem = row.original.weekData[index];
-          const attendanceValue = weekItem ? weekItem.classAttendance : '0%';
-          return (
-            <Badge
-              variant={
-                parseInt(attendanceValue) >= 80 ? 'success' : 'destructive'
-              }
-            >
-              {attendanceValue}
-            </Badge>
-          );
-        },
-      },
-    );
-  });
-
-  return weekColumns;
+export type TransformedRecord = {
+  week: string;
+  lessonName: string;
+  teacher: string;
+  date: string;
+  weeklyAttendance: string;
+  studentsAttendance: { [key: string]: string };
 };
 
-// Generate columns for up to 40 weeks, assuming your weekData is structured accordingly
-export const reportcolumns: ColumnDef<ReportData>[] = [
-  ...staticColumns,
-  ...generateWeekColumns(
-    Array.from({ length: 40 }, (_) => ({
-      date: '',
-      lesson: '',
-      teacher: '',
-      classAttendance: '',
-    })),
-  ),
-];
+export const reportcolumns = (
+  attendanceRecords: TransformedRecord[],
+  studentAttendanceMap: { [key: string]: { total: number; present: number } },
+): ColumnDef<TransformedRecord, unknown>[] => {
+  if (attendanceRecords.length === 0) return [];
+
+  const students = Object.keys(attendanceRecords[0].studentsAttendance);
+
+  const studentColumns: ColumnDef<TransformedRecord>[] = students.map(
+    (student) => ({
+      accessorKey: `studentsAttendance.${student}`,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={`${student} (${calculateOverallAttendance(student, studentAttendanceMap)}%)`}
+        />
+      ),
+      cell: ({ row }) => {
+        const statusValue = row.original.studentsAttendance[student];
+        const status =
+          statusValue === 'P' ? (
+            <Badge variant='success'>Present</Badge>
+          ) : (
+            <Badge variant='destructive'>Absent</Badge>
+          );
+
+        return status;
+      },
+    }),
+  );
+
+  const columns: ColumnDef<TransformedRecord>[] = [
+    {
+      accessorKey: 'week',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Week' />
+      ),
+    },
+    {
+      accessorKey: 'lessonName',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Lesson Name' />
+      ),
+    },
+    {
+      accessorKey: 'teacher',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Session Teacher' />
+      ),
+    },
+    {
+      accessorKey: 'date',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Class Date' />
+      ),
+    },
+    {
+      accessorKey: 'weeklyAttendance',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Weekly Attendance' />
+      ),
+    },
+    ...studentColumns,
+  ];
+
+  return columns;
+};

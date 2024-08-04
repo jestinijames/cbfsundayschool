@@ -1,78 +1,69 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AttendanceRecord } from '@/actions/googlesheets/attendance/fetch-attendance-records';
 
-interface WeeklyReport {
-  date: string;
-  lesson: string;
+export interface TransformedRecord {
+  week: string;
+  lessonName: string;
   teacher: string;
-  classAttendance: string;
-  students: { [studentName: string]: string }; // studentName -> status
+  date: string;
+  weeklyAttendance: string;
+  studentsAttendance: { [key: string]: string };
 }
 
-interface Report {
-  weekDates: string[];
-  reportData: {
-    [classId: string]: {
-      className: string;
-      weeklyReports: WeeklyReport[];
-      studentAttendance: { [studentName: string]: string }; // studentName -> overall percentage
-    };
-  };
-}
+export const transformData = (
+  attendanceRecords: AttendanceRecord[],
+): {
+  transformedData: TransformedRecord[];
+  studentAttendanceMap: { [key: string]: { total: number; present: number } };
+} => {
+  const transformedData: TransformedRecord[] = [];
+  const studentAttendanceMap: {
+    [key: string]: { total: number; present: number };
+  } = {};
 
-export interface TransformedData {
-  weeks: {
-    [key: string]: string; // Dynamic key for each week
-  }[];
-  studentAttendance: {
-    [studentName: string]: {
-      weeklyStatus: string[];
-      overallAttendance: string;
-    };
-  };
-}
+  const uniqueDates = [
+    ...new Set(attendanceRecords.map((record) => record.date)),
+  ];
+  uniqueDates.forEach((date, index) => {
+    const recordsForDate = attendanceRecords.filter(
+      (record) => record.date === date,
+    );
 
-export const transformAttendanceData = (data: Report): TransformedData => {
-  const weeks: { [key: string]: string }[] = [];
-  const studentAttendance: { [studentName: string]: any } = {};
+    const studentsAttendance: { [key: string]: string } = {};
+    recordsForDate.forEach((record) => {
+      studentsAttendance[record.student] =
+        record.status === 'Present' ? 'P' : 'A';
 
-  // Initialize an array for weeks with dynamic keys
-  for (let i = 0; i < data.weekDates.length; i++) {
-    weeks.push({
-      [`week${i + 1}.date`]: '',
-      [`week${i + 1}.lesson`]: '',
-      [`week${i + 1}.teacher`]: '',
-      [`week${i + 1}.classAttendance`]: '',
+      if (!studentAttendanceMap[record.student]) {
+        studentAttendanceMap[record.student] = { total: 0, present: 0 };
+      }
+      studentAttendanceMap[record.student].total += 1;
+      if (record.status === 'Present') {
+        studentAttendanceMap[record.student].present += 1;
+      }
     });
-  }
 
-  Object.values(data.reportData).forEach((classData) => {
-    classData.weeklyReports.forEach((report, index) => {
-      const weekIndex = index + 1;
+    const weeklyAttendance = `${Math.round((recordsForDate.filter((record) => record.status === 'Present').length / recordsForDate.length) * 100)}%`;
 
-      // Populate the weeks array
-      weeks[weekIndex - 1] = {
-        [`week${weekIndex}.date`]: report.date,
-        [`week${weekIndex}.lesson`]: report.lesson,
-        [`week${weekIndex}.teacher`]: report.teacher,
-        [`week${weekIndex}.classAttendance`]: report.classAttendance,
-      };
-
-      // Update student attendance
-      Object.entries(report.students).forEach(([studentName, status]) => {
-        if (!studentAttendance[studentName]) {
-          studentAttendance[studentName] = {
-            studentName,
-            overallAttendance: classData.studentAttendance[studentName] || 'NA',
-            weeklyStatus: new Array(data.weekDates.length).fill('NA'),
-          };
-        }
-        studentAttendance[studentName].weeklyStatus[weekIndex - 1] = status;
-      });
+    transformedData.push({
+      week: `Week ${index + 1}`,
+      lessonName: recordsForDate[0].lesson,
+      teacher: recordsForDate[0].teacher,
+      date,
+      weeklyAttendance,
+      studentsAttendance,
     });
   });
 
-  return {
-    weeks,
-    studentAttendance,
-  };
+  return { transformedData, studentAttendanceMap };
+};
+
+export const calculateOverallAttendance = (
+  student: string,
+  studentAttendanceMap: { [key: string]: { total: number; present: number } },
+): number => {
+  const attendance = studentAttendanceMap[student];
+  if (attendance) {
+    return Math.round((attendance.present / attendance.total) * 100);
+  }
+  return 0;
 };

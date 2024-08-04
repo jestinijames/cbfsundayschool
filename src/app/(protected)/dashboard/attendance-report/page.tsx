@@ -1,23 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DataTableSkeleton } from '@/components/tables/attendance-table/data-table-skeleton';
 import { reportcolumns } from '@/components/tables/report-table/report-columns';
 import { ReportDataTable } from '@/components/tables/report-table/report-data-table';
+import {
+  transformData,
+  TransformedRecord,
+} from '@/components/tables/report-table/report-transform-data';
 import { Heading } from '@/components/ui/heading';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 
+import { fetchAttendanceRecords } from '@/actions/googlesheets/attendance/fetch-attendance-records';
 import {
   ClassData,
   readAllClasses,
 } from '@/actions/googlesheets/classes/read-classes';
-import {
-  fetchReportData,
-  ReportData,
-} from '@/actions/googlesheets/reports/fetch-report-data';
 import {
   readAllStudents,
   StudentData,
@@ -26,7 +26,13 @@ import {
 export default function DashboardPage() {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
-  const [reportRecords, setReportRecords] = useState<ReportData[]>([]);
+
+  const [transformedRecords, setTransformedRecords] = useState<
+    TransformedRecord[]
+  >([]);
+  const [studentAttendanceMap, setStudentAttendanceMap] = useState<{
+    [key: string]: { total: number; present: number };
+  }>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,9 +64,14 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       setIsLoading(true);
-      const response = await fetchReportData();
+      const response = await fetchAttendanceRecords();
       if (response.success && response.data) {
-        setReportRecords(response.data);
+        const { transformedData, studentAttendanceMap } = transformData(
+          response.data,
+        );
+
+        setTransformedRecords(transformedData);
+        setStudentAttendanceMap(studentAttendanceMap);
         setIsLoading(false);
       } else {
         toast({
@@ -80,39 +91,36 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <>
-        <ScrollArea className='h-full'>
-          <div className='flex-1 space-y-4 p-5'>
-            <div className='flex items-center justify-between'>
-              <Heading
-                title='Attendance Report'
-                description='Full attendance report'
-              />
-            </div>
-            <Separator />
-            <section className='flex flex-col gap-y-4'>
-              <DataTableSkeleton
-                columnCount={6}
-                filterableColumnCount={6}
-                cellWidths={[
-                  '12rem',
-                  '12rem',
-                  '12rem',
-                  '12rem',
-                  '12rem',
-                  '12rem',
-                ]}
-                shrinkZero
-              />
-            </section>
+        <div className='flex-1 space-y-4 p-5'>
+          <div className='flex items-center justify-between'>
+            <Heading
+              title='Attendance Report'
+              description='Full attendance report'
+            />
           </div>
-        </ScrollArea>
+          <Separator />
+          <section className='flex flex-col gap-y-4'>
+            <DataTableSkeleton
+              columnCount={6}
+              filterableColumnCount={6}
+              cellWidths={[
+                '12rem',
+                '12rem',
+                '12rem',
+                '12rem',
+                '12rem',
+                '12rem',
+              ]}
+              shrinkZero
+            />
+          </section>
+        </div>
       </>
     );
   }
 
   return (
     <>
-      {/* <ScrollArea className='h-full'> */}
       <div className='flex-1 space-y-4 p-5'>
         <div className='flex items-center justify-between'>
           <Heading
@@ -123,14 +131,13 @@ export default function DashboardPage() {
         <Separator />
         <section className='flex flex-col gap-y-4'>
           <ReportDataTable
-            columns={reportcolumns}
-            data={reportRecords}
+            columns={reportcolumns(transformedRecords, studentAttendanceMap)}
+            data={transformedRecords}
             classes={classes}
             students={students}
           />
         </section>
       </div>
-      {/* </ScrollArea> */}
     </>
   );
 }
