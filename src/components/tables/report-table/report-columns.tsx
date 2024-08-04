@@ -2,7 +2,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 
-import { DataTableColumnHeader } from '@/components/tables/attendance-table/data-table-column-header';
+import { ReportDataTableColumnHeader } from '@/components/tables/report-table/report-table-column-header';
 import { calculateOverallAttendance } from '@/components/tables/report-table/report-transform-data';
 import { Badge } from '@/components/ui/badge';
 
@@ -19,18 +19,35 @@ export type TransformedRecord = {
 export const reportcolumns = (
   attendanceRecords: TransformedRecord[],
   studentAttendanceMap: { [key: string]: { total: number; present: number } },
+  currentClassFilter: string,
 ): ColumnDef<TransformedRecord, unknown>[] => {
   if (attendanceRecords.length === 0) return [];
 
-  const students = Object.keys(attendanceRecords[0].studentsAttendance);
+  // Filter attendance records based on the selected class
+  const filteredRecords = attendanceRecords.filter(
+    (record) => !currentClassFilter || record.class === currentClassFilter,
+  );
+
+  const students = Object.keys(
+    filteredRecords.reduce(
+      (acc, record) => {
+        Object.keys(record.studentsAttendance).forEach((student) => {
+          acc[student] = true;
+        });
+        return acc;
+      },
+      {} as { [key: string]: boolean },
+    ),
+  );
 
   const studentColumns: ColumnDef<TransformedRecord>[] = students.map(
     (student) => ({
       accessorKey: `studentsAttendance.${student}`,
       header: ({ column }) => (
-        <DataTableColumnHeader
+        <ReportDataTableColumnHeader
           column={column}
-          title={`${student} (${calculateOverallAttendance(student, studentAttendanceMap)}%)`}
+          title={`${student} `}
+          percentage={calculateOverallAttendance(student, studentAttendanceMap)}
         />
       ),
       cell: ({ row }) => {
@@ -51,38 +68,63 @@ export const reportcolumns = (
     {
       accessorKey: 'week',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Week' />
+        <ReportDataTableColumnHeader column={column} title='Week' />
       ),
     },
     {
       accessorKey: 'class',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Class' />
+        <ReportDataTableColumnHeader column={column} title='Class' />
       ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
     },
     {
       accessorKey: 'lessonName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Lesson Name' />
+        <ReportDataTableColumnHeader column={column} title='Lesson Name' />
       ),
     },
     {
       accessorKey: 'teacher',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Session Teacher' />
+        <ReportDataTableColumnHeader column={column} title='Session Teacher' />
       ),
     },
     {
       accessorKey: 'date',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Class Date' />
+        <ReportDataTableColumnHeader column={column} title='Class Date' />
       ),
     },
     {
       accessorKey: 'weeklyAttendance',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Weekly Attendance' />
+        <ReportDataTableColumnHeader
+          column={column}
+          title='Weekly Attendance'
+        />
       ),
+      cell: ({ row }) => {
+        const weeklyAttendance = row.original.weeklyAttendance;
+
+        const extractNumber = weeklyAttendance
+          ? parseInt(weeklyAttendance.replace('%', ''))
+          : 0;
+
+        const variant =
+          extractNumber >= 80
+            ? 'success'
+            : extractNumber >= 60
+              ? 'warning'
+              : 'destructive';
+
+        return <Badge variant={variant}>{Math.ceil(extractNumber)}%</Badge>;
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
     },
     ...studentColumns,
   ];

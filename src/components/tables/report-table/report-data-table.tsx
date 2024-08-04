@@ -31,12 +31,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   classes: ClassData[];
+  setCurrentClassFilter: (className: string) => void;
 }
 
 export function ReportDataTable<TData, TValue>({
   columns,
   data,
   classes,
+  setCurrentClassFilter,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -65,7 +67,11 @@ export function ReportDataTable<TData, TValue>({
 
   return (
     <div>
-      <ReportDataTableToolbar table={table} classes={classes} />
+      <ReportDataTableToolbar
+        table={table}
+        classes={classes}
+        setCurrentClassFilter={setCurrentClassFilter}
+      />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>

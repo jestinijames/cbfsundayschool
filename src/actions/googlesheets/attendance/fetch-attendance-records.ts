@@ -31,7 +31,7 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
 
     const attendanceResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'attendance!A2:F',
+      range: 'attendance!A2:G', // Updated range to include lesson_id
     });
 
     const studentsResponse = await sheets.spreadsheets.values.get({
@@ -72,7 +72,7 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
       teacher: teachersMap.get(row[3]) || 'N/A',
       date: row[4],
       status: row[5],
-      lesson: lessonsMap.get(row[6]) || 'N/A',
+      lesson: lessonsMap.get(row[6]) || 'N/A', // Mapping lesson_id to lesson_name
     }));
 
     return { success: true, data: attendanceRecords };

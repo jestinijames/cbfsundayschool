@@ -140,6 +140,10 @@ export default function AttendanceForm() {
     //  console.log(attendanceData, 'adta');
 
     const response = await submitAttendance(attendanceData);
+    markAttendanceMethods.reset();
+    setAssignedClass(null);
+    setValue('students', []);
+
     if (response.success) {
       toast({
         variant: 'success',

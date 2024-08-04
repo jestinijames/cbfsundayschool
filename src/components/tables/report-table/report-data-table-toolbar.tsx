@@ -4,19 +4,21 @@ import { DownloadIcon, XIcon } from 'lucide-react';
 import { exportTableToCSV } from '@/lib/export';
 
 import { Button } from '@/components/custom/button';
-import { DataTableFacetedFilter } from '@/components/tables/attendance-table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/tables/attendance-table/data-table-view-options';
+import { ReportDataTableFacetedFilter } from '@/components/tables/report-table/report-data-table-faceted-filter';
 
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   classes: ClassData[];
+  setCurrentClassFilter: (className: string) => void;
 }
 
 export function ReportDataTableToolbar<TData>({
   table,
   classes,
+  setCurrentClassFilter,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
@@ -25,17 +27,26 @@ export function ReportDataTableToolbar<TData>({
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
         <div className='flex gap-x-2 gap-y-2 flex-wrap'>
           {table.getColumn('class') && (
-            <DataTableFacetedFilter
+            <ReportDataTableFacetedFilter
               column={table.getColumn('class')}
               title='Class'
-              options={classes}
+              options={classes.map((cls) => ({
+                label: cls.label,
+                value: cls.label,
+              }))}
+              onChange={(selectedClasses) =>
+                setCurrentClassFilter(selectedClasses.join(', '))
+              }
             />
           )}
         </div>
         {isFiltered && (
           <Button
             variant='ghost'
-            onClick={() => table.resetColumnFilters()}
+            onClick={() => {
+              table.resetColumnFilters();
+              setCurrentClassFilter('');
+            }}
             className='h-8 px-2 lg:px-3'
           >
             Reset

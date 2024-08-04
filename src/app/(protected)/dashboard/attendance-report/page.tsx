@@ -21,6 +21,7 @@ import {
 
 export default function DashboardPage() {
   const [classes, setClasses] = useState<ClassData[]>([]);
+  const [currentClassFilter, setCurrentClassFilter] = useState('');
 
   const [transformedRecords, setTransformedRecords] = useState<
     TransformedRecord[]
@@ -113,9 +114,14 @@ export default function DashboardPage() {
         <Separator />
         <section className='flex flex-col gap-y-4'>
           <ReportDataTable
-            columns={reportcolumns(transformedRecords, studentAttendanceMap)}
+            columns={reportcolumns(
+              transformedRecords,
+              studentAttendanceMap,
+              currentClassFilter,
+            )}
             data={transformedRecords}
             classes={classes}
+            setCurrentClassFilter={setCurrentClassFilter}
           />
         </section>
       </div>
