@@ -26,20 +26,17 @@ import {
 } from '@/components/ui/table';
 
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
-import { StudentData } from '@/actions/googlesheets/students/read-students';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   classes: ClassData[];
-  students: StudentData[];
 }
 
 export function ReportDataTable<TData, TValue>({
   columns,
   data,
   classes,
-  students,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -68,11 +65,7 @@ export function ReportDataTable<TData, TValue>({
 
   return (
     <div>
-      <ReportDataTableToolbar
-        table={table}
-        classes={classes}
-        students={students}
-      />
+      <ReportDataTableToolbar table={table} classes={classes} />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>

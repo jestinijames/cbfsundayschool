@@ -7,6 +7,7 @@ export interface TransformedRecord {
   date: string;
   weeklyAttendance: string;
   studentsAttendance: { [key: string]: string };
+  class: string;
 }
 
 export const transformData = (
@@ -51,6 +52,7 @@ export const transformData = (
       date,
       weeklyAttendance,
       studentsAttendance,
+      class: recordsForDate[0].class,
     });
   });
 

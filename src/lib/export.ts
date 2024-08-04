@@ -21,12 +21,13 @@ export function exportTableToCSV<TData>(
     .filter((id) => !excludeColumns.includes(id));
 
   // Build CSV content
+  const rows = onlySelected
+    ? table.getFilteredSelectedRowModel().rows
+    : table.getRowModel().rows; // Use getRowModel() to fetch all rows
+
   const csvContent = [
     headers.join(','),
-    ...(onlySelected
-      ? table.getFilteredSelectedRowModel().rows
-      : table.getRowModel().rows
-    ).map((row) =>
+    ...rows.map((row) =>
       headers
         .map((header) => {
           const cellValue = row.getValue(header as string);

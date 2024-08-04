@@ -18,14 +18,9 @@ import {
   ClassData,
   readAllClasses,
 } from '@/actions/googlesheets/classes/read-classes';
-import {
-  readAllStudents,
-  StudentData,
-} from '@/actions/googlesheets/students/read-students';
 
 export default function DashboardPage() {
   const [classes, setClasses] = useState<ClassData[]>([]);
-  const [students, setStudents] = useState<StudentData[]>([]);
 
   const [transformedRecords, setTransformedRecords] = useState<
     TransformedRecord[]
@@ -40,19 +35,6 @@ export default function DashboardPage() {
       const response = await readAllClasses();
       if (response.success && response.data) {
         setClasses(response.data);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
-      }
-    };
-
-    const fetchStudents = async () => {
-      const response = await readAllStudents();
-      if (response.success) {
-        setStudents(response.data);
       } else {
         toast({
           variant: 'destructive',
@@ -84,7 +66,7 @@ export default function DashboardPage() {
       }
     };
     fetchClasses();
-    fetchStudents();
+
     fetchData();
   }, []);
 
@@ -102,7 +84,7 @@ export default function DashboardPage() {
           <section className='flex flex-col gap-y-4'>
             <DataTableSkeleton
               columnCount={6}
-              filterableColumnCount={6}
+              filterableColumnCount={2}
               cellWidths={[
                 '12rem',
                 '12rem',
@@ -134,7 +116,6 @@ export default function DashboardPage() {
             columns={reportcolumns(transformedRecords, studentAttendanceMap)}
             data={transformedRecords}
             classes={classes}
-            students={students}
           />
         </section>
       </div>

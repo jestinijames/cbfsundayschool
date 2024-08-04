@@ -13,6 +13,7 @@ export type TransformedRecord = {
   date: string;
   weeklyAttendance: string;
   studentsAttendance: { [key: string]: string };
+  class: string;
 };
 
 export const reportcolumns = (
@@ -51,6 +52,12 @@ export const reportcolumns = (
       accessorKey: 'week',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title='Week' />
+      ),
+    },
+    {
+      accessorKey: 'class',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Class' />
       ),
     },
     {

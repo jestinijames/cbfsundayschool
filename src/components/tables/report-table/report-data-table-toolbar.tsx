@@ -8,18 +8,15 @@ import { DataTableFacetedFilter } from '@/components/tables/attendance-table/dat
 import { DataTableViewOptions } from '@/components/tables/attendance-table/data-table-view-options';
 
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
-import { StudentData } from '@/actions/googlesheets/students/read-students';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   classes: ClassData[];
-  students: StudentData[];
 }
 
 export function ReportDataTableToolbar<TData>({
   table,
   classes,
-  students,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
@@ -27,18 +24,11 @@ export function ReportDataTableToolbar<TData>({
     <div className='flex items-center justify-between flex-wrap gap-2 py-4'>
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
         <div className='flex gap-x-2 gap-y-2 flex-wrap'>
-          {table.getColumn('className') && (
+          {table.getColumn('class') && (
             <DataTableFacetedFilter
-              column={table.getColumn('className')}
+              column={table.getColumn('class')}
               title='Class'
               options={classes}
-            />
-          )}
-          {table.getColumn('studentName') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('studentName')}
-              title='Student'
-              options={students}
             />
           )}
         </div>
@@ -57,8 +47,9 @@ export function ReportDataTableToolbar<TData>({
           size='sm'
           onClick={() =>
             exportTableToCSV(table, {
-              filename: 'weekly-reports',
+              filename: 'full-report',
               excludeColumns: ['select', 'actions'],
+              onlySelected: false, // Ensure full data is exported
             })
           }
         >
