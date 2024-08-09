@@ -42,7 +42,7 @@ export const reportcolumns = (
 
   const studentColumns: ColumnDef<TransformedRecord>[] = students.map(
     (student) => ({
-      accessorKey: `studentsAttendance.${student}`,
+      accessorKey: `${student}`,
       header: ({ column }) => (
         <ReportDataTableColumnHeader
           column={column}
