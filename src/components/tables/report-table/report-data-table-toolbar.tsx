@@ -1,11 +1,10 @@
 import { Table } from '@tanstack/react-table';
 import { DownloadIcon, XIcon } from 'lucide-react';
 
-import { exportTableToCSV } from '@/lib/export';
-
 import { Button } from '@/components/custom/button';
 import { DataTableViewOptions } from '@/components/tables/attendance-table/data-table-view-options';
 import { ReportDataTableFacetedFilter } from '@/components/tables/report-table/report-data-table-faceted-filter';
+import { exportReportTableToCSV } from '@/components/tables/report-table/report-export-students';
 
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
 
@@ -57,7 +56,7 @@ export function ReportDataTableToolbar<TData>({
           variant='outline'
           size='sm'
           onClick={() =>
-            exportTableToCSV(table, {
+            exportReportTableToCSV(table, {
               filename: 'full-report',
               excludeColumns: ['select', 'actions'],
               onlySelected: false, // Ensure full data is exported
