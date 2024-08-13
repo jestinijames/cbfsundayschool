@@ -65,7 +65,7 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
     const teachersMap = new Map(assignmentsRows.map((row) => [row[0], row[1]])); // id -> name
     const lessonsMap = new Map(lessonsRows.map((row) => [row[0], row[1]])); // id -> name
 
-    const attendanceRecords: AttendanceRecord[] = attendanceRows.map((row) => ({
+    let attendanceRecords: AttendanceRecord[] = attendanceRows.map((row) => ({
       id: row[0],
       student: studentsMap.get(row[1]) || 'N/A',
       class: classesMap.get(row[2]) || 'N/A',
@@ -74,6 +74,11 @@ export const fetchAttendanceRecords = async (): Promise<Response> => {
       status: row[5],
       lesson: lessonsMap.get(row[6]) || 'N/A', // Mapping lesson_id to lesson_name
     }));
+
+    // Sort the attendance records by date in ascending order
+    attendanceRecords = attendanceRecords.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
     return { success: true, data: attendanceRecords };
   } catch (error) {
