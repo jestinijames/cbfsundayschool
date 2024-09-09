@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { DataTableSkeleton } from '@/components/tables/attendance-table/data-table-skeleton';
 import { reportcolumns } from '@/components/tables/report-table/report-columns';
 import { ReportDataTable } from '@/components/tables/report-table/report-data-table';
@@ -19,7 +20,12 @@ import {
   readAllClasses,
 } from '@/actions/googlesheets/classes/read-classes';
 
-export default function DashboardPage() {
+const breadcrumbItems = [
+  { title: 'Dashboard', link: '/dashboard' },
+  { title: 'Report', link: '/dashboard/attendance-report' },
+];
+
+export default function ReportPage() {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [currentClassFilter, setCurrentClassFilter] = useState('');
 
@@ -105,6 +111,7 @@ export default function DashboardPage() {
   return (
     <>
       <div className='flex-1 space-y-4 p-5'>
+        <Breadcrumbs items={breadcrumbItems} />
         <div className='flex items-center justify-between'>
           <Heading
             title='Attendance Report'

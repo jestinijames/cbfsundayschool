@@ -29,6 +29,7 @@ import {
   Twitter,
   User,
   User2Icon,
+  Users,
   UserX2Icon,
   X,
 } from 'lucide-react';
@@ -64,6 +65,7 @@ export const Icons = {
   laptop: Laptop,
   tracker: SquarePenIcon,
   report: NotepadTextIcon,
+  users: Users,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
