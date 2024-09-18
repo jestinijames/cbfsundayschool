@@ -10,5 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: result.error }, { status: 404 });
   }
 
-  return NextResponse.json({ users: result.users });
+  const response = NextResponse.json({ users: result.users });
+  response.headers.set('Cache-Control', 'no-store, must-revalidate'); // Disable caching
+  return response;
 }

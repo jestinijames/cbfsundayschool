@@ -34,7 +34,7 @@ export const register = async (values: RegisterFormType) => {
       name,
       email,
       password: hashedPassword,
-      role: 'ADMIN',
+      role: 'USER',
     },
   });
 
