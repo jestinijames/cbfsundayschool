@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 
 import { getUsers } from '@/actions/user-fetch';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const result = await getUsers();
 
