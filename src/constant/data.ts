@@ -5,24 +5,26 @@ import { NavItem } from '@/types';
 export const navItems: NavItem[] = [
   {
     title: 'Mark Attendance',
-    href: '/',
+    href: '/dashboard',
     icon: 'dashboard',
     label: 'Mark Attendance',
-    visible: ['admin', 'teacher'],
   },
   {
     title: 'Tracker',
-    href: '/list/tracker',
+    href: '/dashboard/tracker',
     icon: 'tracker',
     label: 'Tracker',
-    visible: ['admin'],
   },
   {
     title: 'Report',
-    href: '/list/report',
+    href: '/dashboard/attendance-report',
     icon: 'report',
     label: 'Report',
-    visible: ['admin'],
+  },
+  {
+    title: 'User Management',
+    href: '/dashboard/user-management',
+    icon: 'users',
   },
 ];
 
@@ -39,117 +41,80 @@ export const statuses = [
   },
 ];
 
-export const sideMenuItems = [
+export const userData = [
   {
-    title: 'MENU',
-    items: [
-      {
-        icon: '/home.png',
-        label: 'Home',
-        href: '/',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/teacher.png',
-        label: 'Teachers',
-        href: '/list/teachers',
-        visible: ['admin', 'teacher'],
-      },
-      {
-        icon: '/student.png',
-        label: 'Students',
-        href: '/list/students',
-        visible: ['admin', 'teacher'],
-      },
-      {
-        icon: '/parent.png',
-        label: 'Parents',
-        href: '/list/parents',
-        visible: ['admin', 'teacher'],
-      },
-      {
-        icon: '/subject.png',
-        label: 'Subjects',
-        href: '/list/subjects',
-        visible: ['admin'],
-      },
-      {
-        icon: '/class.png',
-        label: 'Classes',
-        href: '/list/classes',
-        visible: ['admin', 'teacher'],
-      },
-      {
-        icon: '/lesson.png',
-        label: 'Lessons',
-        href: '/list/lessons',
-        visible: ['admin', 'teacher'],
-      },
-      {
-        icon: '/exam.png',
-        label: 'Exams',
-        href: '/list/exams',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/assignment.png',
-        label: 'Assignments',
-        href: '/list/assignments',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/result.png',
-        label: 'Results',
-        href: '/list/results',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/attendance.png',
-        label: 'Attendance',
-        href: '/list/attendance',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/calendar.png',
-        label: 'Events',
-        href: '/list/events',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/message.png',
-        label: 'Messages',
-        href: '/list/messages',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/announcement.png',
-        label: 'Announcements',
-        href: '/list/announcements',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-    ],
+    name: 'Telegram',
+    connected: false,
+    desc: 'Connect with Telegram for real-time communication.',
   },
   {
-    title: 'OTHER',
-    items: [
-      {
-        icon: '/profile.png',
-        label: 'Profile',
-        href: '/profile',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/setting.png',
-        label: 'Settings',
-        href: '/settings',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-      {
-        icon: '/logout.png',
-        label: 'Logout',
-        href: '/logout',
-        visible: ['admin', 'teacher', 'student', 'parent'],
-      },
-    ],
+    name: 'Notion',
+    connected: true,
+    desc: 'Effortlessly sync Notion pages for seamless collaboration.',
+  },
+  {
+    name: 'Figma',
+    connected: true,
+    desc: 'View and collaborate on Figma designs in one place.',
+  },
+  {
+    name: 'Trello',
+    connected: false,
+    desc: 'Sync Trello cards for streamlined project management.',
+  },
+  {
+    name: 'Slack',
+    connected: false,
+    desc: 'Integrate Slack for efficient team communication',
+  },
+  {
+    name: 'Zoom',
+    connected: true,
+    desc: 'Host Zoom meetings directly from the dashboard.',
+  },
+  {
+    name: 'Stripe',
+    connected: false,
+    desc: 'Easily manage Stripe transactions and payments.',
+  },
+  {
+    name: 'Gmail',
+    connected: true,
+    desc: 'Access and manage Gmail messages effortlessly.',
+  },
+  {
+    name: 'Medium',
+    connected: false,
+    desc: 'Explore and share Medium stories on your dashboard.',
+  },
+  {
+    name: 'Skype',
+    connected: false,
+    desc: 'Connect with Skype contacts seamlessly.',
+  },
+  {
+    name: 'Docker',
+    connected: false,
+    desc: 'Effortlessly manage Docker containers on your dashboard.',
+  },
+  {
+    name: 'GitHub',
+    connected: false,
+    desc: 'Streamline code management with GitHub integration.',
+  },
+  {
+    name: 'GitLab',
+    connected: false,
+    desc: 'Efficiently manage code projects with GitLab integration.',
+  },
+  {
+    name: 'Discord',
+    connected: false,
+    desc: 'Connect with Discord for seamless team communication.',
+  },
+  {
+    name: 'WhatsApp',
+    connected: false,
+    desc: 'Easily integrate WhatsApp for direct messaging.',
   },
 ];

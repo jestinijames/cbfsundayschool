@@ -1,6 +1,8 @@
-import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { SessionProvider } from 'next-auth/react';
 import { ViewTransitions } from 'next-view-transitions';
 import * as React from 'react';
 
@@ -8,6 +10,7 @@ import '@/styles/globals.css';
 
 import { Toaster } from '@/components/ui/toaster';
 
+import { auth } from '@/auth';
 import { siteConfig } from '@/constant/config';
 import ProgressProvider from '@/providers/ProgressProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
@@ -40,14 +43,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+
   return (
-    <ClerkProvider
-      appearance={{
-        elements: {
-          footer: 'hidden',
-        },
-      }}
-    >
+    <SessionProvider session={session}>
       <ViewTransitions>
         <html lang='en' suppressHydrationWarning>
           <body className={`${inter.className} overflow-hidden`}>
@@ -60,9 +59,11 @@ export default async function RootLayout({
               <ProgressProvider>{children}</ProgressProvider>
             </ThemeProvider>
             <Toaster />
+            <SpeedInsights />
+            <Analytics />
           </body>
         </html>
       </ViewTransitions>
-    </ClerkProvider>
+    </SessionProvider>
   );
 }

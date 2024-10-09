@@ -2,6 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { CalendarIcon, CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
@@ -59,6 +60,7 @@ import {
   submitAttendance,
 } from '@/actions/googlesheets/attendance/submit-attendance';
 import { ClassData } from '@/actions/googlesheets/classes/read-classes';
+import { readTeacherByEmail } from '@/actions/googlesheets/teachers/read-teacher-by-email';
 import {
   readAllTeachers,
   TeacherData,
@@ -79,6 +81,21 @@ export default function AttendanceForm() {
     //formState: { errors },
   } = markAttendanceMethods;
   const selectedTeacher = watch('teacher');
+
+  const { data: session } = useSession();
+  const teacherEmail = session?.user?.email;
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (teacherEmail) {
+        const response = await readTeacherByEmail(teacherEmail);
+        if (response.success && response.teacherName) {
+          setValue('teacher', response.teacherName);
+        }
+      }
+    };
+    fetchInitialData();
+  }, [teacherEmail, setValue]);
 
   useEffect(() => {
     if (selectedTeacher) {
