@@ -2,6 +2,7 @@
 'use client';
 import { MenuIcon } from 'lucide-react';
 import { useState } from 'react';
+import React from 'react';
 
 import { DashboardNav } from '@/components/common/dashboard-nav';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';

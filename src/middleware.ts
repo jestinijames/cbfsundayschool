@@ -1,39 +1,33 @@
-import NextAuth from 'next-auth';
+/* eslint-disable  @typescript-eslint/no-non-null-assertion */
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-import {
-  //apiAuthPrefix,
-  authRoutes,
-  DEFAULT_LOGIN_REDIRECT,
-  PUBLIC_ROUTES,
-} from '@/lib/routes';
+import { routeAccessMap } from './lib/settings';
 
-import { authConfig } from '@/auth.config';
+const matchers = Object.keys(routeAccessMap).map((route) => ({
+  matcher: createRouteMatcher([route]),
+  allowedRoles: routeAccessMap[route],
+}));
 
-const { auth } = NextAuth(authConfig);
+export default clerkMiddleware((auth, req) => {
+  // if (isProtectedRoute(req)) auth().protect()
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
-  //const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  // const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-  const isPublicRoute = PUBLIC_ROUTES.includes(nextUrl.pathname);
-  // if (!isApiAuthRoute) {
-  //   return undefined;
-  // }
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  const { sessionClaims } = auth();
+
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
+
+  for (const { matcher, allowedRoles } of matchers) {
+    if (matcher(req) && !allowedRoles.includes(role!)) {
+      return NextResponse.redirect(new URL(`/${role}`, req.url));
     }
-    return undefined;
   }
-
-  if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL('/auth/login', nextUrl));
-  }
-  return undefined;
 });
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
 };
