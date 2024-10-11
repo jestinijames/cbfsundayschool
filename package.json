@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/elements": "^0.15.9",
-    "@clerk/nextjs": "^5.7.1",
+    "@clerk/elements": "^0.15.10",
+    "@clerk/nextjs": "^5.7.2",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
@@ -35,9 +35,9 @@
     "next-themes": "^0.3.0",
     "next-view-transitions": "^0.3.2",
     "nextjs-toploader": "^3.7.15",
-    "react": "^18",
+    "react": "^18.3.1",
     "react-day-picker": "8.10.1",
-    "react-dom": "^18",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
@@ -46,14 +46,14 @@
     "zustand": "5.0.0-rc.2"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/node": "^20.16.11",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
-    "eslint": "^8",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.2.5",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.3"
   }
 }

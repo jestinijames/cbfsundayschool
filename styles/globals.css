@@ -79,3 +79,9 @@
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }
+
+.cl-userButtonPopoverFooter,
+.cl-userButtonPopoverActionButton__addAccount.cl-button__addAccount,
+.cl-userButtonPopoverActionButton__manageAccount.cl-button__manageAccount {
+  display: none !important;
+}
