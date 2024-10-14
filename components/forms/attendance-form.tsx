@@ -186,16 +186,16 @@ export default function AttendanceForm() {
   );
 }
 function TeacherField({ isMutating }: { isMutating: boolean }) {
-  const { control, setValue } = useFormContext();
+  const { control } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
-  const [popOverOpen, setPopOverOpen] = useState(false);
+  // const [popOverOpen, setPopOverOpen] = useState(false);
 
   useEffect(() => {
     const fetchTeachers = async () => {
       const response = await readAllTeachers();
       if (response.success) {
         setTeachers(response.data);
-        console.log(response.data, 'teachers'); // Log after fetching data
+        // console.log(response.data, 'teachers'); // Log after fetching data
       } else {
         toast({
           variant: 'destructive',
@@ -285,7 +285,12 @@ function TeacherField({ isMutating }: { isMutating: boolean }) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Teacher</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select
+            disabled={isMutating}
+            aria-disabled={isMutating}
+            onValueChange={field.onChange}
+            defaultValue={field.value}
+          >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder='Select a teacher' />
@@ -314,7 +319,7 @@ function LessonField({ isMutating }: { isMutating: boolean }) {
 
   const selectedClass = watch('class');
 
-  const [popOverOpen, setPopOverOpen] = useState(false);
+  // const [popOverOpen, setPopOverOpen] = useState(false);
 
   useEffect(() => {
     if (selectedClass) {
@@ -406,7 +411,12 @@ function LessonField({ isMutating }: { isMutating: boolean }) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Lesson</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select
+            disabled={isMutating}
+            aria-disabled={isMutating}
+            onValueChange={field.onChange}
+            defaultValue={field.value}
+          >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder='Select Lesson' />
