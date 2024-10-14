@@ -63,6 +63,13 @@ import {
   readAllTeachers,
   TeacherData,
 } from '@/actions/googlesheets/teachers/read-teachers';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function AttendanceForm() {
   const markAttendanceMethods = useForm<z.infer<typeof AttendanceFormSchema>>({
@@ -178,7 +185,6 @@ export default function AttendanceForm() {
     </>
   );
 }
-
 function TeacherField({ isMutating }: { isMutating: boolean }) {
   const { control, setValue } = useFormContext();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
@@ -189,6 +195,7 @@ function TeacherField({ isMutating }: { isMutating: boolean }) {
       const response = await readAllTeachers();
       if (response.success) {
         setTeachers(response.data);
+        console.log(response.data, 'teachers'); // Log after fetching data
       } else {
         toast({
           variant: 'destructive',
@@ -199,68 +206,100 @@ function TeacherField({ isMutating }: { isMutating: boolean }) {
     };
 
     fetchTeachers();
-  }, []);
+  }, []); // Empty dependency array to fetch only once on mount
 
   return (
+    // <FormField
+    //   control={control}
+    //   name='teacher'
+    //   render={({ field }) => (
+    //     <FormItem className='mt-3 flex flex-col'>
+    //       <FormLabel htmlFor='teacher'>Teacher</FormLabel>
+    //       <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
+    //         <PopoverTrigger asChild>
+    //           <FormControl>
+    //             <Button
+    //               variant='outline'
+    //               role='combobox'
+    //               disabled={isMutating}
+    //               aria-disabled={isMutating}
+    //               className={cn(
+    //                 'justify-between',
+    //                 !field.value && 'text-accent-foreground'
+    //               )}
+    //             >
+    //               {field.value
+    //                 ? teachers.find((teacher) => teacher.value === field.value)
+    //                     ?.label ?? 'Select teacher'
+    //                 : 'Select teacher'}
+    //               <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
+    //             </Button>
+    //           </FormControl>
+    //         </PopoverTrigger>
+    //         <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
+    //           <Command>
+    //             <CommandInput placeholder='Search teacher...' />
+    //             <CommandEmpty>No teachers found.</CommandEmpty>
+    //             <div className='max-h-40 overflow-y-auto'>
+    //               <CommandGroup>
+    //                 {/* Ensure teachers array is iterable */}
+    //                 {teachers.length > 0 ? (
+    //                   teachers.map((teacher) => (
+    //                     <CommandItem
+    //                       key={teacher.value}
+    //                       value={teacher.value}
+    //                       onSelect={() => {
+    //                         setValue('teacher', teacher.value);
+    //                         setPopOverOpen(false);
+    //                       }}
+    //                     >
+    //                       <CheckIcon
+    //                         className={cn(
+    //                           'mr-2 size-4',
+    //                           teacher.value.toLowerCase() ===
+    //                             field.value?.toLowerCase()
+    //                             ? 'opacity-100'
+    //                             : 'opacity-0'
+    //                         )}
+    //                       />
+    //                       {teacher.label}
+    //                     </CommandItem>
+    //                   ))
+    //                 ) : (
+    //                   <CommandEmpty>No teachers found.</CommandEmpty>
+    //                 )}
+    //               </CommandGroup>
+    //             </div>
+    //           </Command>
+    //         </PopoverContent>
+    //       </Popover>
+
+    //       <FormMessage />
+    //     </FormItem>
+    //   )}
+    // />
+
     <FormField
       control={control}
       name='teacher'
       render={({ field }) => (
-        <FormItem className='mt-3 flex flex-col'>
-          <FormLabel htmlFor='teacher'>Teacher</FormLabel>
-          <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant='outline'
-                  role='combobox'
-                  disabled={isMutating}
-                  aria-disabled={isMutating}
-                  className={cn(
-                    'justify-between',
-
-                    !field.value && 'text-accent-foreground'
-                  )}
-                >
-                  {field.value
-                    ? teachers.find((teacher) => teacher.value === field.value)
-                        ?.label
-                    : 'Select teacher'}
-                  <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
-              <Command>
-                <CommandInput placeholder='Search teacher...' />
-                <CommandEmpty>No teachers found.</CommandEmpty>
-                <div className='max-h-40 overflow-y-auto'>
-                  <CommandGroup>
-                    {teachers.map((teacher) => (
-                      <CommandItem
-                        key={teacher.value}
-                        value={teacher.value}
-                        onSelect={() => {
-                          setValue('teacher', teacher.value);
-                          setPopOverOpen(false);
-                        }}
-                      >
-                        <CheckIcon
-                          className={cn(
-                            'mr-2 size-4',
-                            teacher.value.toLowerCase() === field.value
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                          )}
-                        />
-                        {teacher.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </div>
-              </Command>
-            </PopoverContent>
-          </Popover>
+        <FormItem>
+          <FormLabel>Teacher</FormLabel>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder='Select a teacher' />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {teachers.length > 0 &&
+                teachers.map((teacher, index) => (
+                  <SelectItem key={index} value={teacher.value}>
+                    {teacher.label}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           <FormMessage />
         </FormItem>
@@ -296,65 +335,92 @@ function LessonField({ isMutating }: { isMutating: boolean }) {
   }, [selectedClass, setValue]);
 
   return (
+    // <FormField
+    //   control={control}
+    //   name='lesson'
+    //   render={({ field }) => (
+    //     <FormItem className='mt-3 flex flex-col'>
+    //       <FormLabel htmlFor='lesson'>Lesson</FormLabel>
+    //       <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
+    //         <PopoverTrigger asChild>
+    //           <FormControl>
+    //             <Button
+    //               variant='outline'
+    //               role='combobox'
+    //               disabled={isMutating}
+    //               aria-disabled={isMutating}
+    //               className={cn(
+    //                 'justify-between',
+
+    //                 !field.value && 'text-accent-foreground'
+    //               )}
+    //             >
+    //               {field.value
+    //                 ? lessons.find((lesson) => lesson.value === field.value)
+    //                     ?.label
+    //                 : 'Select lesson'}
+    //               <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
+    //             </Button>
+    //           </FormControl>
+    //         </PopoverTrigger>
+    //         <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
+    //           <Command>
+    //             <CommandInput placeholder='Search lesson...' />
+    //             <CommandEmpty>No lessons found.</CommandEmpty>
+    //             <div className='max-h-40 overflow-y-auto'>
+    //               <CommandGroup>
+    //                 {lessons.map((lesson) => (
+    //                   <CommandItem
+    //                     key={lesson.value}
+    //                     value={lesson.value}
+    //                     onSelect={() => {
+    //                       setValue('lesson', lesson.value);
+    //                       setPopOverOpen(false);
+    //                     }}
+    //                   >
+    //                     <CheckIcon
+    //                       className={cn(
+    //                         'mr-2 size-4',
+    //                         lesson.value.toLowerCase() === field.value
+    //                           ? 'opacity-100'
+    //                           : 'opacity-0'
+    //                       )}
+    //                     />
+    //                     {lesson.label}
+    //                   </CommandItem>
+    //                 ))}
+    //               </CommandGroup>
+    //             </div>
+    //           </Command>
+    //         </PopoverContent>
+    //       </Popover>
+
+    //       <FormMessage />
+    //     </FormItem>
+    //   )}
+    // />
+
     <FormField
       control={control}
       name='lesson'
       render={({ field }) => (
-        <FormItem className='mt-3 flex flex-col'>
-          <FormLabel htmlFor='lesson'>Lesson</FormLabel>
-          <Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant='outline'
-                  role='combobox'
-                  disabled={isMutating}
-                  aria-disabled={isMutating}
-                  className={cn(
-                    'justify-between',
-
-                    !field.value && 'text-accent-foreground'
-                  )}
-                >
-                  {field.value
-                    ? lessons.find((lesson) => lesson.value === field.value)
-                        ?.label
-                    : 'Select lesson'}
-                  <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>
-              <Command>
-                <CommandInput placeholder='Search lesson...' />
-                <CommandEmpty>No lessons found.</CommandEmpty>
-                <div className='max-h-40 overflow-y-auto'>
-                  <CommandGroup>
-                    {lessons.map((lesson) => (
-                      <CommandItem
-                        key={lesson.value}
-                        value={lesson.value}
-                        onSelect={() => {
-                          setValue('lesson', lesson.value);
-                          setPopOverOpen(false);
-                        }}
-                      >
-                        <CheckIcon
-                          className={cn(
-                            'mr-2 size-4',
-                            lesson.value.toLowerCase() === field.value
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                          )}
-                        />
-                        {lesson.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </div>
-              </Command>
-            </PopoverContent>
-          </Popover>
+        <FormItem>
+          <FormLabel>Lesson</FormLabel>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder='Select Lesson' />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {lessons.length > 0 &&
+                lessons.map((lessons, index) => (
+                  <SelectItem key={index} value={lessons.value}>
+                    {lessons.label}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
           <FormMessage />
         </FormItem>
