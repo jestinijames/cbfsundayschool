@@ -625,7 +625,7 @@ function StudentsAssignedField({
               ))}
             </TableBody>
           </Table>
-          <Button disabled={isMutating} className='mt-10' type='submit'>
+          <Button disabled={isMutating} className='mt-10 mb-10' type='submit'>
             Mark Attendance
           </Button>
         </CardContent>
