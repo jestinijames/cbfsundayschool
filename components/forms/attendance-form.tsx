@@ -172,13 +172,6 @@ export default function AttendanceForm() {
               assignedClass={assignedClass}
               isMutating={isMutating}
             />
-            <Button
-              disabled={isMutating}
-              className='ml-auto mt-10'
-              type='submit'
-            >
-              Mark Attendance
-            </Button>
           </form>
         </Form>
       </section>
@@ -632,6 +625,9 @@ function StudentsAssignedField({
               ))}
             </TableBody>
           </Table>
+          <Button disabled={isMutating} className='mt-10' type='submit'>
+            Mark Attendance
+          </Button>
         </CardContent>
       </Card>
     </>

@@ -15,7 +15,7 @@ export const navItems: NavItem[] = [
     href: '/list/tracker',
     icon: 'tracker',
     label: 'Tracker',
-    visible: ['admin'],
+    visible: ['admin', 'teacher'],
   },
   {
     title: 'Report',
