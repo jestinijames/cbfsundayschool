@@ -19,7 +19,7 @@ const capitalizeWords = (str: string): string => {
 };
 
 export const fetchClassByTeacherName = async (
-  teacherName: string,
+  teacherName: string
 ): Promise<FetchClassByTeacherNameResponse> => {
   try {
     // Capitalize the first letter of each word in the teacher's name
@@ -38,20 +38,22 @@ export const fetchClassByTeacherName = async (
     // Fetch assignments sheet to find the class ID for the given teacher name
     const assignmentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'assignments!A2:C',
+      range: 'assignments!A2:E',
     });
 
     const assignmentRows = assignmentsResponse.data.values;
 
-    if (!assignmentRows || assignmentRows.length === 0) {
+    const activeTeachers = assignmentRows?.filter((row) => row[4] === 't');
+
+    if (!activeTeachers || activeTeachers.length === 0) {
       return {
         success: false,
         error: 'No data found in assignments sheet',
       };
     }
 
-    const assignment = assignmentRows.find(
-      (row) => row[1] === formattedTeacherName,
+    const assignment = activeTeachers.find(
+      (row) => row[1] === formattedTeacherName
     );
 
     if (!assignment) {

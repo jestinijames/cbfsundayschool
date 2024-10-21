@@ -39,7 +39,7 @@ export const fetchReportData = async (): Promise<Response> => {
     // Fetch data from Google Sheets
     const studentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'students!A2:C',
+      range: 'students!A2:I',
     });
 
     const attendanceResponse = await sheets.spreadsheets.values.get({
@@ -54,7 +54,7 @@ export const fetchReportData = async (): Promise<Response> => {
 
     const assignmentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'assignments!A2:B',
+      range: 'assignments!A2:E',
     });
 
     const lessonsResponse = await sheets.spreadsheets.values.get({
@@ -69,19 +69,23 @@ export const fetchReportData = async (): Promise<Response> => {
     const assignmentsRows = assignmentsResponse.data.values || [];
     const lessonsRows = lessonsResponse.data.values || [];
 
+    // Active users and students
+    const activeStudents = studentsRows.filter((row) => row[8] === 't');
+    const activeTeachers = assignmentsRows.filter((row) => row[4] === 't');
+
     // Create maps for quick lookups
 
     const classesMap = new Map(classesRows.map((row) => [row[0], row[1]]));
-    const teachersMap = new Map(assignmentsRows.map((row) => [row[0], row[1]]));
+    const teachersMap = new Map(activeTeachers.map((row) => [row[0], row[1]]));
     const lessonsMap = new Map(lessonsRows.map((row) => [row[0], row[1]]));
     const classStudentsMap = new Map<string, string[]>(); // classId -> studentIds
 
     // Parse dates correctly during sorting
     attendanceRows = attendanceRows.sort(
-      (a, b) => new Date(a[4]).getTime() - new Date(b[4]).getTime(),
+      (a, b) => new Date(a[4]).getTime() - new Date(b[4]).getTime()
     );
 
-    studentsRows.forEach((row) => {
+    activeStudents.forEach((row) => {
       const classId = row[2];
       if (!classStudentsMap.has(classId)) {
         classStudentsMap.set(classId, []);
@@ -123,7 +127,7 @@ export const fetchReportData = async (): Promise<Response> => {
         (value.presentDates.size / totalClasses) * 100;
       overallAttendanceMap.set(
         studentId,
-        `${Math.ceil(attendancePercentage)}%`,
+        `${Math.ceil(attendancePercentage)}%`
       );
     });
 
@@ -133,7 +137,7 @@ export const fetchReportData = async (): Promise<Response> => {
     // Sort the unique dates in ascending order
     // Ensure unique dates are sorted in ascending order
     const uniqueDates = [...new Set(attendanceRows.map((row) => row[4]))].sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      (a, b) => new Date(a).getTime() - new Date(b).getTime()
     );
 
     // Populate weekDataMap with sorted dates
@@ -143,7 +147,13 @@ export const fetchReportData = async (): Promise<Response> => {
           const lessonName = lessonsMap.get(row[6]) || 'N/A';
           const teacherName = teachersMap.get(row[3]) || 'N/A';
 
-          const classAttendance = `${Math.ceil(((classStudentsMap.get(row[2])?.filter((studentId) => studentId === row[1]).length || 0) / classStudentsMap.get(row[2])!.length) * 100)}%`;
+          const classAttendance = `${Math.ceil(
+            ((classStudentsMap
+              .get(row[2])
+              ?.filter((studentId) => studentId === row[1]).length || 0) /
+              classStudentsMap.get(row[2])!.length) *
+              100
+          )}%`;
 
           const week = uniqueDates.findIndex((d) => d === date) + 1; // Calculate the week number
 
@@ -164,7 +174,7 @@ export const fetchReportData = async (): Promise<Response> => {
     // Create final report data
     let reportData: ReportData[] = [];
 
-    studentsRows.forEach((studentRow) => {
+    activeStudents.forEach((studentRow) => {
       const studentId = studentRow[0];
       const studentName = studentRow[1];
       const classId = studentRow[2];
@@ -172,7 +182,7 @@ export const fetchReportData = async (): Promise<Response> => {
       const overallAttendance = overallAttendanceMap.get(studentId) || '0%';
       const weekData = Array.from(
         { length: 40 },
-        (_, i) => weekDataMap.get(`week${i + 1}`) || [],
+        (_, i) => weekDataMap.get(`week${i + 1}`) || []
       ).flat();
 
       reportData.push({
@@ -186,7 +196,7 @@ export const fetchReportData = async (): Promise<Response> => {
     // Ensure the report data is sorted by date within each week's data
     reportData = reportData.map((data) => {
       data.weekData.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
       return data;
     });

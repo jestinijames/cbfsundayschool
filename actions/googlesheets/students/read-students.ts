@@ -32,7 +32,10 @@ export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
 
     const rows = response.data.values;
 
-    if (!rows || rows.length === 0) {
+    // Active Students
+    const activeStudents = rows?.filter((row) => row[8] === 't');
+
+    if (!activeStudents || activeStudents.length === 0) {
       return {
         success: false,
         error: 'No data found',
@@ -41,8 +44,8 @@ export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
     }
 
     // Assuming the first row is the header
-    const header = rows[0];
-    const data: StudentData[] = rows.slice(1).map((row) => {
+    const header = activeStudents[0];
+    const data: StudentData[] = activeStudents.slice(1).map((row) => {
       const obj: Partial<StudentData> = {};
       header.forEach((key, index) => {
         if (key === 'name') {

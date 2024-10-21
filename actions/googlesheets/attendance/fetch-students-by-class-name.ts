@@ -19,7 +19,7 @@ const capitalizeWords = (str: string): string => {
 };
 
 export const fetchStudentsByClassName = async (
-  className: string,
+  className: string
 ): Promise<FetchStudentsByClassNameResponse> => {
   try {
     // Capitalize the first letter of each word in the teacher's name
@@ -62,16 +62,9 @@ export const fetchStudentsByClassName = async (
 
     const classId = classData[0];
 
-    // Go through students sheet and find students with the class id 'classId'
-    //     id	name	class_id
-    // s1	Ethan Daniel	c1
-    // s2	Paul Mattackal	c1
-    // s3	Sijo John	c1
-    // s4	George	c1
-
     const studentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'students!A2:C',
+      range: 'students!A2:I', // Fetching until 'active' field (column I)
     });
 
     const studentRows = studentsResponse.data.values;
@@ -84,7 +77,7 @@ export const fetchStudentsByClassName = async (
     }
 
     const studentsInClass = studentRows
-      .filter((row) => row[2] === classId)
+      .filter((row) => row[2] === classId && row[8] === 't') // 'row[8]' is the 'active' column
       .map((row) => ({ label: row[1], value: row[1] }));
 
     if (studentsInClass.length === 0) {

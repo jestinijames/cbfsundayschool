@@ -42,16 +42,24 @@ export const readAllTeachers = async (): Promise<ReadAllTeachersResponse> => {
 
     // Assuming the first row is the header
     const header = rows[0];
-    const data: TeacherData[] = rows.slice(1).map((row) => {
-      const obj: Partial<TeacherData> = {};
-      header.forEach((key, index) => {
-        if (key === 'teacher') {
-          obj.label = row[index];
-          obj.value = row[index];
-        }
-      });
-      return obj as TeacherData;
-    });
+    const teacherIndex = header.indexOf('teacher');
+    const activeIndex = header.indexOf('active');
+
+    if (teacherIndex === -1 || activeIndex === -1) {
+      return {
+        success: false,
+        error: 'Required fields not found in the spreadsheet',
+        data: [],
+      };
+    }
+
+    const data: TeacherData[] = rows
+      .slice(1)
+      .filter((row) => row[activeIndex] === 't') // Filter only active teachers
+      .map((row) => ({
+        label: row[teacherIndex],
+        value: row[teacherIndex],
+      }));
 
     // Sort the data by the 'label' property in ascending order
     data.sort((a, b) => a.label.localeCompare(b.label));

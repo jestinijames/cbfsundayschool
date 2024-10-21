@@ -24,6 +24,20 @@ export const navItems: NavItem[] = [
     label: 'Report',
     visible: ['admin'],
   },
+  {
+    title: 'Teachers Management',
+    href: '/list/teachers',
+    icon: 'teacher',
+    label: 'Teachers Management',
+    visible: ['admin'],
+  },
+  {
+    title: 'Students Management',
+    href: '/list/students',
+    icon: 'student',
+    label: 'Students Management',
+    visible: ['admin'],
+  },
 ];
 
 export const statuses = [

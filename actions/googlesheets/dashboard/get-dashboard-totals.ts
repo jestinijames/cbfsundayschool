@@ -28,21 +28,22 @@ export const getDashboardTotals = async (): Promise<DashboardTotalResponse> => {
     // Fetch teachers
     const teachersResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'assignments!B2:B', // Fetch the teacher column
+      range: 'assignments!B2:E', // Fetch the teacher column
     });
 
     const teacherRows = teachersResponse.data.values;
-    const uniqueTeachers = new Set(teacherRows?.map((row) => row[0]) || []);
-    const teacherCount = uniqueTeachers.size;
+    const activeTeachers = teacherRows?.filter((row) => row[3] === 't');
+    const teacherCount = activeTeachers?.length || 0;
 
     // Fetch students
     const studentsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'students!A2:A', // Fetch the student id column
+      range: 'students!A2:I', // Fetch the student id column
     });
 
     const studentRows = studentsResponse.data.values;
-    const studentCount = studentRows?.length || 0;
+    const activeStudents = studentRows?.filter((row) => row[8] === 't');
+    const studentCount = activeStudents?.length || 0;
 
     // Fetch classes
     const classesResponse = await sheets.spreadsheets.values.get({

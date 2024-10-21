@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use server';
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,7 +20,7 @@ interface Response {
 }
 
 export const submitAttendance = async (
-  attendanceData: AttendanceData,
+  attendanceData: AttendanceData
 ): Promise<Response> => {
   try {
     const auth = await google.auth.getClient({
@@ -63,20 +62,21 @@ export const submitAttendance = async (
     // fetch teacherId from teacher name
     const teachersResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'assignments!A2:B',
+      range: 'assignments!A2:E',
     });
 
     const teacherRows = teachersResponse.data.values;
+    const activeTeachers = teacherRows?.filter((row) => row[4] === 't');
 
-    if (!teacherRows || teacherRows.length === 0) {
+    if (!activeTeachers || activeTeachers.length === 0) {
       return {
         success: false,
         error: 'No data found in assignments sheet',
       };
     }
 
-    const teacherData = teacherRows.find(
-      (row) => row[1] === attendanceData.teacher,
+    const teacherData = activeTeachers.find(
+      (row) => row[1] === attendanceData.teacher
     );
     if (!teacherData) {
       return {
@@ -102,7 +102,7 @@ export const submitAttendance = async (
     }
 
     const lessonData = lessonRows.find(
-      (row) => row[1] === attendanceData.lesson,
+      (row) => row[1] === attendanceData.lesson
     );
     if (!lessonData) {
       return {
@@ -129,19 +129,22 @@ export const submitAttendance = async (
 
       const studentsResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: 'students!A2:B',
+        range: 'students!A2:I',
       });
 
       const studentRows = studentsResponse.data.values;
+      const activeStudents = studentRows?.filter((row) => row[8] === 't');
 
-      if (!studentRows || studentRows.length === 0) {
+      if (!activeStudents || activeStudents.length === 0) {
         return {
           success: false,
           error: 'No data found in students sheet',
         };
       }
 
-      const studentData = studentRows.find((row) => row[1] === student.value);
+      const studentData = activeStudents.find(
+        (row) => row[1] === student.value
+      );
       if (!studentData) {
         return {
           success: false,
@@ -155,7 +158,7 @@ export const submitAttendance = async (
           row[1] === studentId &&
           row[2] === classId &&
           row[4] === formattedDate &&
-          row[6] === lessonId,
+          row[6] === lessonId
       );
 
       if (existingRow) {
