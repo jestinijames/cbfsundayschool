@@ -69,8 +69,21 @@ export const AttendanceFormSchema = z.object({
       value: z.string(),
       label: z.string(),
       status: z.boolean().default(false),
-    }),
+    })
   ),
 });
 
+export const StudentFormSchema = z.object({
+  id: z.string().optional().nullable(),
+  name: z.string(),
+  classId: z.string(),
+  guardian1: z.string(),
+  guardian2: z.string(),
+  dob: z.date().min(new Date('1970-01-01'), {
+    message: 'Date is out of range',
+  }),
+});
+
 export type AttendanceFormType = z.infer<typeof AttendanceFormSchema>;
+
+export type StudentFormType = z.infer<typeof StudentFormSchema>;

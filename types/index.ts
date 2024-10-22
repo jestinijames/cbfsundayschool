@@ -31,3 +31,14 @@ export interface FooterItem {
 export type MainNavItem = NavItemWithOptionalChildren;
 
 export type SidebarNavItem = NavItemWithChildren;
+export interface WeeklyClassAttendancePercentage {
+  date: string;
+  class: string;
+  weeklyPercentage: number;
+}
+
+export interface StudentAttendancePercentage {
+  student: string;
+  class: string;
+  overallPercentage: number;
+}

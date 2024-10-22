@@ -2,7 +2,7 @@
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
 
-interface StudentData {
+export interface StudentData {
   name: string;
   classId: string;
   guardian1: string;

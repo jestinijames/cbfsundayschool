@@ -1,43 +1,48 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 'use client';
-import { useEffect, useState } from 'react';
 
-import { DataTableSkeleton } from '@/components/tables/attendance-table/data-table-skeleton';
-import { overallreportcolumns } from '@/components/tables/overall-reports-table/overall-report-columns';
-import { OverallReportDataTable } from '@/components/tables/overall-reports-table/overall-report-data-table';
-import { WeeklyReportDataTable } from '@/components/tables/weekly-reports-table/weekly-report-data-table';
-import { weeklyreportcolumns } from '@/components/tables/weekly-reports-table/weely-report-columns';
-// import { DataTable } from '@/components/ui/data-table';
-import { Heading } from '@/components/ui/heading';
-import { Separator } from '@/components/ui/separator';
-import { toast } from '@/components/ui/use-toast';
-
-import { fetchAttendanceRecords } from '@/actions/googlesheets/attendance/fetch-attendance-records';
+import {
+  StudentAttendancePercentage,
+  WeeklyClassAttendancePercentage,
+} from '@/types';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { ClassData } from '@/actions/googlesheets/attendance/fetch-class-by-teacher-name';
 import { StudentData } from '@/actions/googlesheets/attendance/fetch-students-by-class-name';
-import { readAllClasses } from '@/actions/googlesheets/classes/read-classes';
-import { readAllStudents } from '@/actions/googlesheets/students/read-students';
+import { AttendanceRecord } from '@/components/tables/attendance-table/columns';
 import {
   readAllTeachers,
   TeacherData,
 } from '@/actions/googlesheets/teachers/read-teachers';
+import { fetchAttendanceRecords } from '@/actions/googlesheets/attendance/fetch-attendance-records';
+import { readAllStudents } from '@/actions/googlesheets/students/read-students';
+import { readAllClasses } from '@/actions/googlesheets/classes/read-classes';
+import { toast } from '@/components/ui/use-toast';
+import {
+  getDashboardTotals,
+  Totals,
+} from '@/actions/googlesheets/dashboard/get-dashboard-totals';
 
-import { type AttendanceRecord, columns } from './attendance-table/columns';
-import { DataTable } from './attendance-table/data-table';
-
-interface WeeklyClassAttendancePercentage {
-  date: string;
-  class: string;
-  weeklyPercentage: number;
+interface DataContextValue {
+  isLoading: boolean;
+  error: string;
+  attendanceRecords: AttendanceRecord[];
+  classes: ClassData[];
+  teachers: TeacherData[];
+  students: StudentData[];
+  attendancePercentage: WeeklyClassAttendancePercentage[];
+  studentAttendancePercentage: StudentAttendancePercentage[];
+  totals: Totals;
 }
 
-interface StudentAttendancePercentage {
-  student: string;
-  class: string;
-  overallPercentage: number;
-}
+const DataContext = createContext<DataContextValue | undefined>(undefined);
 
-export const AttendanceClient = () => {
+export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [attendanceRecords, setAttendanceRecords] = useState<
     AttendanceRecord[]
   >([]);
@@ -51,21 +56,38 @@ export const AttendanceClient = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [totals, setTotals] = useState<Totals>({
+    teachers: 0,
+    students: 0,
+    classes: 0,
+  });
+
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    const fetchTeacherCount = async () => {
+      try {
+        const response = await getDashboardTotals();
+        if (response.success && response.totals) {
+          setTotals(response.totals);
+        } else {
+          setError('Something went wrong');
+        }
+      } catch (error) {
+        setTotals({ teachers: 0, students: 0, classes: 0 }); // Default fallback
+        setError('Something went wrong');
+      }
+    };
+
     const fetchClasses = async () => {
       const response = await readAllClasses();
       if (response.success && response.data) {
         setClasses(response.data);
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
+        setError('Something went wrong');
       }
     };
     const fetchTeachers = async () => {
@@ -73,11 +95,7 @@ export const AttendanceClient = () => {
       if (response.success) {
         setTeachers(response.data);
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
+        setError('Something went wrong');
       }
     };
 
@@ -86,11 +104,7 @@ export const AttendanceClient = () => {
       if (response.success) {
         setStudents(response.data);
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Something went wrong.',
-          description: response.error,
-        });
+        setError('Something went wrong');
       }
     };
 
@@ -175,7 +189,7 @@ export const AttendanceClient = () => {
                 response.data?.find((record) => record.student === student)
                   ?.class || 'Unknown',
               overallPercentage: (attendance.present / attendance.total) * 100,
-            }),
+            })
           );
 
         setStudentAttendancePercentage(studentAttendancePercentages);
@@ -190,103 +204,48 @@ export const AttendanceClient = () => {
         });
       }
     };
+    fetchTeacherCount();
     fetchClasses();
     fetchTeachers();
     fetchStudents();
     fetchRecords();
   }, []);
 
-  if (isLoading) {
-    return (
-      <>
-        <div className='flex items-start justify-between'>
-          <Heading
-            title='CBF Sunday School Attendance Tracker'
-            description='View Student Attendance'
-          />
-        </div>
-        <Separator />
-        <DataTableSkeleton
-          columnCount={6}
-          filterableColumnCount={6}
-          cellWidths={['12rem', '12rem', '12rem', '12rem', '12rem', '12rem']}
-          shrinkZero
-        />
-
-        <div className='flex items-start justify-between mt-5'>
-          <Heading
-            title='Weekly Attendance'
-            description='Weekly attendance percentage per class'
-          />
-        </div>
-        <Separator />
-        <DataTableSkeleton
-          columnCount={3}
-          filterableColumnCount={2}
-          cellWidths={['6rem', '6rem', '6rem']}
-          shrinkZero
-        />
-
-        <div className='flex items-start justify-between mt-5'>
-          <Heading
-            title='Overall Student Attendance'
-            description='Overall student attendance percentage per class'
-          />
-        </div>
-        <Separator />
-        <DataTableSkeleton
-          columnCount={3}
-          filterableColumnCount={2}
-          cellWidths={['6rem', '6rem', '6rem']}
-          shrinkZero
-        />
-      </>
-    );
-  }
+  const contextValue = useMemo(
+    () => ({
+      isLoading,
+      error,
+      attendanceRecords,
+      classes,
+      teachers,
+      students,
+      attendancePercentage,
+      studentAttendancePercentage,
+      totals,
+    }),
+    [
+      isLoading,
+      error,
+      attendanceRecords,
+      classes,
+      teachers,
+      students,
+      attendancePercentage,
+      studentAttendancePercentage,
+      totals,
+    ]
+  );
 
   return (
-    <>
-      <div className='flex items-start justify-between'>
-        <Heading
-          title='CBF Sunday School Attendance Tracker'
-          description='View Student Attendance'
-        />
-      </div>
-      <Separator />
-      <DataTable
-        columns={columns}
-        data={attendanceRecords}
-        classes={classes}
-        teachers={teachers}
-        students={students}
-      />
-
-      <div className='flex items-start justify-between mt-5'>
-        <Heading
-          title='Weekly Attendance'
-          description='Weekly attendance percentage per class'
-        />
-      </div>
-      <Separator />
-      <WeeklyReportDataTable
-        columns={weeklyreportcolumns}
-        data={attendancePercentage}
-        classes={classes}
-      />
-
-      <div className='flex items-start justify-between mt-5'>
-        <Heading
-          title='Overall Student Attendance'
-          description='Overall student attendance percentage per class'
-        />
-      </div>
-      <Separator />
-      <OverallReportDataTable
-        columns={overallreportcolumns}
-        data={studentAttendancePercentage}
-        classes={classes}
-        students={students}
-      />
-    </>
+    // Provide state and functions via context to consuming components
+    <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
   );
+};
+
+export const useDataContext = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useDataContext must be used within a DataProvider');
+  }
+  return context;
 };

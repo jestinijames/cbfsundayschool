@@ -27,15 +27,11 @@ export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'students',
+      range: 'students!A1:I', // Fetch data from columns A to I (including 'active' field)
     });
 
     const rows = response.data.values;
-
-    // Active Students
-    const activeStudents = rows?.filter((row) => row[8] === 't');
-
-    if (!activeStudents || activeStudents.length === 0) {
+    if (!rows || rows.length === 0) {
       return {
         success: false,
         error: 'No data found',
@@ -44,17 +40,37 @@ export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
     }
 
     // Assuming the first row is the header
-    const header = activeStudents[0];
-    const data: StudentData[] = activeStudents.slice(1).map((row) => {
-      const obj: Partial<StudentData> = {};
-      header.forEach((key, index) => {
-        if (key === 'name') {
-          obj.label = row[index];
-          obj.value = row[index];
-        }
-      });
-      return obj as StudentData;
-    });
+    const header = rows[0];
+    const activeIndex = header.findIndex((col) => col === 'active');
+    const nameIndex = header.findIndex((col) => col === 'name');
+
+    // Validate that 'active' and 'name' columns exist
+    if (activeIndex === -1 || nameIndex === -1) {
+      return {
+        success: false,
+        error: "'active' or 'name' column not found in the sheet",
+        data: [],
+      };
+    }
+
+    // Filter active students (ignore header row)
+    const activeStudents = rows
+      .slice(1)
+      .filter((row) => row[activeIndex] === 't');
+
+    if (activeStudents.length === 0) {
+      return {
+        success: false,
+        error: 'No active students found',
+        data: [],
+      };
+    }
+
+    // Map active students to { label, value } format using the 'name' field
+    const data: StudentData[] = activeStudents.map((row) => ({
+      label: row[nameIndex], // Use name for label
+      value: row[nameIndex], // Use name for value (or ID if needed)
+    }));
 
     return {
       success: true,
@@ -63,7 +79,7 @@ export const readAllStudents = async (): Promise<ReadAllStudentsResponse> => {
   } catch (error) {
     return {
       success: false,
-      error: 'Failed to read students',
+      error: `Failed to read students: ${error}`,
       data: [],
     };
   }

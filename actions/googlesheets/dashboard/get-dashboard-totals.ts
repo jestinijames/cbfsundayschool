@@ -3,14 +3,16 @@
 
 import { google } from 'googleapis';
 
+export interface Totals {
+  teachers: number;
+  students: number;
+  classes: number;
+}
+
 interface DashboardTotalResponse {
   success: boolean;
   error?: string;
-  totals?: {
-    teachers: number;
-    students: number;
-    classes: number;
-  };
+  totals?: Totals;
 }
 
 export const getDashboardTotals = async (): Promise<DashboardTotalResponse> => {
