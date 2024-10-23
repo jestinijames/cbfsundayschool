@@ -27,6 +27,10 @@ import {
   getDashboardTotals,
   Totals,
 } from '@/actions/googlesheets/dashboard/get-dashboard-totals';
+import {
+  readStudentsWithClass,
+  StudentDetails,
+} from '@/actions/googlesheets/students/read-student-details';
 
 interface DataContextValue {
   isLoading: boolean;
@@ -35,6 +39,7 @@ interface DataContextValue {
   classes: ClassData[];
   teachers: TeacherData[];
   students: StudentData[];
+  studentRecords: StudentDetails[];
   attendancePercentage: WeeklyClassAttendancePercentage[];
   studentAttendancePercentage: StudentAttendancePercentage[];
   totals: Totals;
@@ -53,6 +58,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const [studentAttendancePercentage, setStudentAttendancePercentage] =
     useState<StudentAttendancePercentage[]>([]);
+
+  const [studentRecords, setStudentRecords] = useState<StudentDetails[]>([]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -105,6 +112,15 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setStudents(response.data);
       } else {
         setError('Something went wrong');
+      }
+    };
+
+    const fetchStudentRecords = async () => {
+      const response = await readStudentsWithClass(); // Fetch student details with class name
+      if (response.success && response.data) {
+        setStudentRecords(response.data); // Set the student records
+      } else {
+        setError('Something went wrong while fetching student records');
       }
     };
 
@@ -208,6 +224,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     fetchClasses();
     fetchTeachers();
     fetchStudents();
+    fetchStudentRecords();
     fetchRecords();
   }, []);
 
@@ -219,6 +236,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       classes,
       teachers,
       students,
+      studentRecords,
       attendancePercentage,
       studentAttendancePercentage,
       totals,
@@ -230,6 +248,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       classes,
       teachers,
       students,
+      studentRecords,
       attendancePercentage,
       studentAttendancePercentage,
       totals,

@@ -1,7 +1,7 @@
 'use server';
 import { google } from 'googleapis';
 
-interface UpdateStudentData {
+export interface UpdateStudentData {
   id: string;
   name?: string;
   classId?: string;

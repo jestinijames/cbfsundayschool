@@ -88,32 +88,40 @@ export default function StudentForm() {
 
   return (
     <>
-      <div className='flex items-center justify-between'>
-        <Heading title='Add Student' description='Add a new student' />
-      </div>
-      <Separator />
-      <section className='flex flex-col gap-y-4'>
-        <Form {...addStudentForm}>
-          <form onSubmit={addStudentForm.handleSubmit(onSubmit)}>
-            <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
-              <NameField isMutating={isMutating} />
-              <ClassesField isMutating={isMutating} />
-              <GuardianOneField isMutating={isMutating} />
-              <GuardianTwoField isMutating={isMutating} />
+      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-1  lg:grid-cols-4'>
+        <div className='flex-1 space-y-4  p-4 pt-6 md:p-8 overflow-y-scroll'>
+          <div className='flex items-center justify-between'>
+            <Heading title='Add Student' description='Add a new student' />
+          </div>
+          <Separator />
+          <section className='flex flex-col gap-y-4'>
+            <Form {...addStudentForm}>
+              <form onSubmit={addStudentForm.handleSubmit(onSubmit)}>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
+                  <NameField isMutating={isMutating} />
+                  <ClassesField isMutating={isMutating} />
+                  <GuardianOneField isMutating={isMutating} />
+                  <GuardianTwoField isMutating={isMutating} />
 
-              <DOBField isMutating={isMutating} />
-            </div>
-            <Button disabled={isMutating} className='mt-10 mb-10' type='submit'>
-              Create Student
-            </Button>
-          </form>
-        </Form>
-      </section>
+                  <DOBField isMutating={isMutating} />
+                </div>
+                <Button
+                  disabled={isMutating}
+                  className='mt-10 mb-10'
+                  type='submit'
+                >
+                  Create Student
+                </Button>
+              </form>
+            </Form>
+          </section>
+        </div>
+      </div>
     </>
   );
 }
 
-function NameField({ isMutating }: { isMutating: boolean }) {
+export function NameField({ isMutating }: { isMutating: boolean }) {
   const { control } = useFormContext();
 
   return (
@@ -139,7 +147,7 @@ function NameField({ isMutating }: { isMutating: boolean }) {
   );
 }
 
-function ClassesField({ isMutating }: { isMutating: boolean }) {
+export function ClassesField({ isMutating }: { isMutating: boolean }) {
   const { control } = useFormContext();
   const [classes, setClasses] = useState<ClassData[]>([]);
 
@@ -159,6 +167,8 @@ function ClassesField({ isMutating }: { isMutating: boolean }) {
 
     fetchClasses();
   }, []); // Empty dependency array to fetch only once on mount
+
+  console.log(classes);
   return (
     <FormField
       control={control}
@@ -194,7 +204,7 @@ function ClassesField({ isMutating }: { isMutating: boolean }) {
   );
 }
 
-function GuardianOneField({ isMutating }: { isMutating: boolean }) {
+export function GuardianOneField({ isMutating }: { isMutating: boolean }) {
   const { control } = useFormContext();
 
   return (
@@ -220,7 +230,7 @@ function GuardianOneField({ isMutating }: { isMutating: boolean }) {
   );
 }
 
-function GuardianTwoField({ isMutating }: { isMutating: boolean }) {
+export function GuardianTwoField({ isMutating }: { isMutating: boolean }) {
   const { control } = useFormContext();
 
   return (
@@ -246,7 +256,7 @@ function GuardianTwoField({ isMutating }: { isMutating: boolean }) {
   );
 }
 
-function DOBField({ isMutating }: { isMutating: boolean }) {
+export function DOBField({ isMutating }: { isMutating: boolean }) {
   const [popOverOpen, setPopOverOpen] = useState(false);
   const { control } = useFormContext();
 

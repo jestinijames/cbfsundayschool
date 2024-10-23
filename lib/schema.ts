@@ -84,6 +84,16 @@ export const StudentFormSchema = z.object({
   }),
 });
 
+export const UpdateStudentFormSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  className: z.string(),
+  classId: z.string(),
+  guardian1: z.string(),
+  guardian2: z.string(),
+  dob: z.string(),
+});
+
 export type AttendanceFormType = z.infer<typeof AttendanceFormSchema>;
 
 export type StudentFormType = z.infer<typeof StudentFormSchema>;
