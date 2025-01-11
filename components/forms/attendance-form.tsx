@@ -338,8 +338,8 @@ function DateField({ isMutating }: { isMutating: boolean }) {
                 selected={field.value as Date}
                 disabled={(date) => {
                   return (
-                    date < startOfJuly ||
-                    date > endOfApril ||
+                    // date < startOfJuly ||
+                    // date > endOfApril ||
                     date.getDay() !== 0 // Disable if not Sunday
                   );
                 }}
